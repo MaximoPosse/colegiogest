@@ -23,7 +23,7 @@ const errors = reactive({})
 const filteredCourses = computed(() => school.courses.filter((course) => `${course.name} ${course.division} ${course.shift}`.toLowerCase().includes(search.value.toLowerCase())))
 const filteredSubjects = computed(() => school.subjects.filter((subject) => `${subject.name} ${subject.teacher} ${subject.course}`.toLowerCase().includes(search.value.toLowerCase())))
 const filteredEnrollments = computed(() => school.enrollments.filter((item) => `${item.student} ${item.course}`.toLowerCase().includes(search.value.toLowerCase())))
-const availableStudents = computed(() => school.students.filter((student) => !school.enrollments.some((enrollment) => enrollment.studentId === student.id && enrollment.course === enrollment.course)))
+const availableStudents = computed(() => school.students.filter((student) => !school.enrollments.some((item) => item.studentId === student.id && item.course === enrollment.course)))
 const columns = computed(() => isUsers.value
   ? [{ key: 'name', label: 'Nombre' }, { key: 'email', label: 'Correo electrónico' }, { key: 'role', label: 'Rol' }, { key: 'status', label: 'Estado' }]
   : isCourses.value
@@ -108,7 +108,7 @@ function enrollStudent() {
     <section v-if="section === 'inscripciones'" class="panel enrollment-form">
       <div class="panel-heading"><div><h2>Nueva inscripción</h2><p>Asigná un alumno a un curso del ciclo lectivo.</p></div></div>
       <div class="enrollment-fields">
-        <FormField id="enroll-student" label="Alumno" required><template #default="{ id }"><select :id="id" v-model="enrollment.studentId"><option disabled value="">Seleccioná un alumno</option><option v-for="student in school.students" :key="student.id" :value="student.id">{{ student.surname }}, {{ student.name }}</option></select></template></FormField>
+        <FormField id="enroll-student" label="Alumno" required><template #default="{ id }"><select :id="id" v-model="enrollment.studentId"><option disabled value="">Seleccioná un alumno</option><option v-for="student in availableStudents" :key="student.id" :value="student.id">{{ student.surname }}, {{ student.name }}</option></select></template></FormField>
         <FormField id="enroll-course" label="Curso" required><template #default="{ id }"><select :id="id" v-model="enrollment.course"><option disabled value="">Seleccioná un curso</option><option v-for="course in school.courses" :key="course.id" :value="`${course.name.replace(' año', 'º')} ${course.division}`">{{ course.name.replace(' año', 'º') }} {{ course.division }} · {{ course.shift }}</option></select></template></FormField>
         <BaseButton @click="enrollStudent"><Plus :size="16" /> Inscribir alumno</BaseButton>
       </div>
