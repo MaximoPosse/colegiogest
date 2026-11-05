@@ -1,0 +1,45 @@
+<script setup>
+import { reactive, ref } from 'vue'
+import { ArrowLeft, Mail, Send } from '@lucide/vue'
+import BaseButton from '../components/BaseButton.vue'
+import FormField from '../components/FormField.vue'
+
+const form = reactive({ email: '' })
+const error = ref('')
+const sent = ref(false)
+
+function sendRecovery() {
+  error.value = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email) ? '' : 'Ingresá un correo electrónico válido.'
+  if (!error.value) sent.value = true
+}
+</script>
+
+<template>
+  <div class="auth-page">
+    <header class="public-header public-header--auth">
+      <RouterLink class="brand" to="/"><img src="/escudo-colegiogest.svg" alt="" class="brand__crest" /><span><strong>ColegioGest</strong><small>Gestión escolar</small></span></RouterLink>
+      <RouterLink class="back-link" to="/login"><ArrowLeft :size="16" /> Volver al acceso</RouterLink>
+    </header>
+    <main class="recover-main">
+      <section class="auth-card recover-card">
+        <div class="auth-card__top"><span class="auth-card__icon"><Mail :size="20" /></span><span class="auth-card__welcome">Recuperación de acceso</span></div>
+        <template v-if="!sent">
+          <h1>¿Olvidaste tu contraseña?</h1>
+          <p class="auth-card__description">No te preocupes. Ingresá tu correo y te enviaremos instrucciones para recuperar el acceso.</p>
+          <form class="stack-form" novalidate @submit.prevent="sendRecovery">
+            <FormField id="recovery-email" label="Correo electrónico" :error="error" required>
+              <template #default="{ id }"><div class="input-with-icon"><Mail :size="17" /><input :id="id" v-model="form.email" type="email" placeholder="nombre@colegio.edu.ar" /></div></template>
+            </FormField>
+            <BaseButton type="submit"><Send :size="16" /> Enviar instrucciones</BaseButton>
+          </form>
+        </template>
+        <div v-else class="success-panel" role="status">
+          <span class="success-panel__icon"><Mail :size="24" /></span><h1>Revisá tu correo</h1>
+          <p>Si <strong>{{ form.email }}</strong> pertenece a una cuenta, recibirás instrucciones para recuperar tu contraseña.</p>
+          <p class="demo-note">En esta versión de demostración no se envían correos reales.</p>
+        </div>
+        <RouterLink class="back-link recover-back" to="/login"><ArrowLeft :size="16" /> Volver a iniciar sesión</RouterLink>
+      </section>
+    </main>
+  </div>
+</template>

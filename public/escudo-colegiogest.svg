@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Escudo de ColegioGest">
+  <defs>
+    <linearGradient id="g1" x1="0%" x2="100%" y1="0%" y2="100%">
+      <stop offset="0%" stop-color="#1F4E79"/>
+      <stop offset="100%" stop-color="#123D62"/>
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="24" fill="url(#g1)"/>
+  <path d="M64 16 104 34v30c0 20-13 40-40 48-27-8-40-28-40-48V34l40-18zm0 16 25 11v22c0 12-7 24-25 31-18-7-25-19-25-31V43l25-11z" fill="#fff" opacity="0.96"/>
+  <path d="M76 44H52v9h9v13h-9v9h24v-9h-9V53h9v-9zm-10 33h8v19h-8z" fill="#8E1B2B"/>
+  <circle cx="64" cy="93" r="6" fill="#DCE8F5"/>
+</svg>
