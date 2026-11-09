@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import {
   ArrowRight, Bell, BookOpen, CalendarCheck, CalendarClock, CalendarDays, ClipboardCheck,
   ClipboardList, GraduationCap, Megaphone, Plus, TrendingUp, Users,
@@ -7,32 +7,27 @@ import {
 import StatCard from '../components/StatCard.vue'
 import StatusBadge from '../components/StatusBadge.vue'
 import BaseButton from '../components/BaseButton.vue'
-import { school, session } from '../data/demoStore'
+import { describeError } from '../lib/errors'
+import { formatDate, todayLongLabel } from '../lib/format'
+import { fetchDashboard } from '../services/dashboard'
+import { session } from '../stores/auth'
 
 const user = computed(() => session.user)
 const role = computed(() => user.value?.role)
 const title = computed(() => role.value === 'administrador' ? 'Panel principal' : role.value === 'profesor' ? 'Mi espacio docente' : 'Mi espacio escolar')
 const greeting = computed(() => role.value === 'alumno' ? '¡Hola' : '¡Buen día')
-const stats = computed(() => {
-  if (role.value === 'administrador') return [
-    { label: 'Alumnos activos', value: school.students.filter((student) => student.status === 'Activo').length, detail: '+12 desde el último ciclo', icon: Users, tone: 'blue' },
-    { label: 'Cursos', value: school.courses.length, detail: 'En ambos turnos', icon: BookOpen, tone: 'green' },
-    { label: 'Profesores', value: '18', detail: 'En actividad', icon: GraduationCap, tone: 'rose' },
-    { label: 'Avisos publicados', value: school.notices.length, detail: 'Este mes', icon: Megaphone, tone: 'amber' },
-  ]
-  if (role.value === 'profesor') return [
-    { label: 'Mis cursos', value: '3', detail: 'Este ciclo lectivo', icon: BookOpen, tone: 'blue' },
-    { label: 'Alumnos', value: '78', detail: 'En cursos asignados', icon: Users, tone: 'green' },
-    { label: 'Presentes hoy', value: '24 / 27', detail: '3.º año · División A', icon: CalendarCheck, tone: 'rose' },
-    { label: 'Por corregir', value: '6', detail: 'Trabajos prácticos', icon: ClipboardList, tone: 'amber' },
-  ]
-  return [
-    { label: 'Mis materias', value: '8', detail: 'En 3.º año · División A', icon: BookOpen, tone: 'blue' },
-    { label: 'Promedio general', value: '8,6', detail: '¡Seguí así!', icon: TrendingUp, tone: 'green' },
-    { label: 'Asistencia', value: '94%', detail: 'Este trimestre', icon: CalendarCheck, tone: 'rose' },
-    { label: 'Actividades', value: '2', detail: 'Próximas entregas', icon: ClipboardList, tone: 'amber' },
-  ]
-})
+const loading = ref(true)
+const error = ref('')
+const data = ref(null)
+const iconMap = { Users, BookOpen, GraduationCap, Megaphone, TrendingUp, CalendarCheck, ClipboardList }
+const stats = computed(() => (data.value?.stats ?? []).map((item) => ({ ...item, icon: iconMap[item.icon] ?? ClipboardList })))
+const recentNotices = computed(() => data.value?.notices ?? [])
+const nextActivities = computed(() => data.value?.upcoming ?? [])
+const agenda = computed(() => data.value?.agenda ?? [])
+const today = computed(() => todayLongLabel())
+const todayBadge = computed(() => new Intl.DateTimeFormat('es-AR', { weekday: 'long', day: 'numeric', month: 'short' }).format(new Date()).toUpperCase())
+const adminStudents = computed(() => stats.value.find((item) => item.label === 'Alumnos activos')?.value ?? 0)
+const adminCourses = computed(() => stats.value.find((item) => item.label === 'Cursos')?.value ?? 0)
 
 const shortcuts = computed(() => {
   if (role.value === 'administrador') return [
@@ -52,9 +47,17 @@ const shortcuts = computed(() => {
   ]
 })
 
-const recentNotices = computed(() => school.notices.slice(0, 3))
-const nextActivities = computed(() => school.activities.filter((item) => item.status === 'Pendiente').slice(0, 3))
-const today = new Intl.DateTimeFormat('es-AR', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date(2026, 10, 5))
+onMounted(async () => {
+  loading.value = true
+  error.value = ''
+  try {
+    data.value = await fetchDashboard(user.value)
+  } catch (caught) {
+    error.value = describeError(caught)
+  } finally {
+    loading.value = false
+  }
+})
 </script>
 
 <template>
@@ -63,41 +66,45 @@ const today = new Intl.DateTimeFormat('es-AR', { weekday: 'long', day: 'numeric'
       <div><div class="breadcrumb">Inicio <span>/</span> <b>{{ title }}</b></div><h1>{{ title }}</h1><p>{{ greeting }}, {{ user?.name }}. Este es el resumen de hoy, {{ today }}.</p></div>
       <RouterLink v-if="role === 'administrador'" to="/app/alumnos/nuevo"><BaseButton><Plus :size="17" /> Nuevo alumno</BaseButton></RouterLink>
     </div>
-    <section class="stats-grid" aria-label="Resumen de actividad">
-      <StatCard v-for="item in stats" :key="item.label" v-bind="item" />
-    </section>
-    <section class="dashboard-shortcuts">
-      <div class="section-heading"><div><h2>Accesos rápidos</h2><p>Lo que necesitás, a un clic</p></div></div>
-      <div class="shortcut-grid">
-        <RouterLink v-for="item in shortcuts" :key="item.label" :to="item.to" class="shortcut-card">
-          <span class="shortcut-card__icon" :class="`shortcut-card__icon--${item.tone}`"><component :is="item.icon" :size="20" /></span>
-          <span class="shortcut-card__copy"><strong>{{ item.label }}</strong><small>{{ item.description }}</small></span><ArrowRight :size="17" class="shortcut-card__arrow" />
-        </RouterLink>
+    <div v-if="loading" class="panel empty-state"><h3>Cargando el panel...</h3><p>Estamos consultando la información de tu cuenta.</p></div>
+    <div v-else-if="error" class="panel empty-state"><h3>No pudimos cargar el panel</h3><p>{{ error }}</p></div>
+    <template v-else>
+      <section class="stats-grid" aria-label="Resumen de actividad">
+        <StatCard v-for="item in stats" :key="item.label" v-bind="item" />
+      </section>
+      <section class="dashboard-shortcuts">
+        <div class="section-heading"><div><h2>Accesos rápidos</h2><p>Lo que necesitás, a un clic</p></div></div>
+        <div class="shortcut-grid">
+          <RouterLink v-for="item in shortcuts" :key="item.label" :to="item.to" class="shortcut-card">
+            <span class="shortcut-card__icon" :class="`shortcut-card__icon--${item.tone}`"><component :is="item.icon" :size="20" /></span>
+            <span class="shortcut-card__copy"><strong>{{ item.label }}</strong><small>{{ item.description }}</small></span><ArrowRight :size="17" class="shortcut-card__arrow" />
+          </RouterLink>
+        </div>
+      </section>
+      <div class="dashboard-columns">
+        <section class="panel dashboard-panel">
+          <div class="panel-heading"><div><h2>{{ role === 'alumno' ? 'Próximas actividades' : 'Últimos avisos' }}</h2><p>{{ role === 'alumno' ? 'Tus próximos desafíos' : 'Novedades de la comunidad' }}</p></div><RouterLink :to="role === 'alumno' ? '/app/mis-actividades' : '/app/avisos'" class="text-link">Ver todos <ArrowRight :size="15" /></RouterLink></div>
+          <div v-if="role === 'alumno'" class="activity-preview-list">
+            <article v-for="activity in nextActivities" :key="activity.id" class="activity-preview"><span class="activity-preview__date"><CalendarDays :size="17" /></span><div><strong>{{ activity.title }}</strong><small>{{ activity.subject }} · Entrega {{ formatDate(activity.dueDate) }}</small></div><StatusBadge :status="activity.status" /></article>
+            <p v-if="!nextActivities.length" class="muted-empty">No tenés actividades pendientes.</p>
+          </div>
+          <div v-else class="notice-preview-list">
+            <article v-for="notice in recentNotices" :key="notice.id" class="notice-preview"><span class="notice-preview__icon"><Bell :size="17" /></span><div><strong>{{ notice.title }}</strong><small>{{ notice.audience }} · {{ formatDate(notice.date) }}</small></div><ArrowRight :size="16" /></article>
+            <p v-if="!recentNotices.length" class="muted-empty">Todavía no hay avisos publicados.</p>
+          </div>
+        </section>
+        <section class="panel today-panel">
+          <div class="today-panel__top"><span><CalendarClock :size="17" /></span><span>{{ todayBadge }}</span></div>
+          <h2>{{ role === 'alumno' ? 'Tu día de clases' : role === 'profesor' ? 'Tu agenda de hoy' : 'La escuela en números' }}</h2>
+          <p>{{ role === 'administrador' ? 'La comunidad sigue en movimiento.' : 'Un vistazo a lo que viene.' }}</p>
+          <div v-if="role !== 'administrador'" class="agenda-list">
+            <div v-for="(item, index) in agenda" :key="`${item.title}-${index}`" class="agenda-item"><time>{{ item.time || '—' }}</time><i class="agenda-line" :class="{ 'agenda-line--rose': index % 2 === 1, 'agenda-line--green': index % 3 === 2 }"></i><div><b>{{ item.title }}</b><small>{{ item.detail }}</small></div></div>
+            <p v-if="!agenda.length" class="muted-empty">No hay información de agenda disponible.</p>
+          </div>
+          <div v-else class="school-overview"><div><span class="overview-dot overview-dot--green"></span><strong>{{ adminStudents }} alumnos</strong><small>activos en la institución</small></div><div><span class="overview-dot overview-dot--blue"></span><strong>{{ adminCourses }} cursos</strong><small>registrados en Supabase</small></div></div>
+          <RouterLink class="today-panel__link" :to="role === 'alumno' ? '/app/mis-cursos' : role === 'profesor' ? '/app/mis-cursos' : '/app/avisos'">{{ role === 'administrador' ? 'Ir a los avisos' : 'Ver mi agenda' }} <ArrowRight :size="15" /></RouterLink>
+        </section>
       </div>
-    </section>
-    <div class="dashboard-columns">
-      <section class="panel dashboard-panel">
-        <div class="panel-heading"><div><h2>{{ role === 'alumno' ? 'Próximas actividades' : 'Últimos avisos' }}</h2><p>{{ role === 'alumno' ? 'Tus próximos desafíos' : 'Novedades de la comunidad' }}</p></div><RouterLink :to="role === 'alumno' ? '/app/mis-actividades' : '/app/avisos'" class="text-link">Ver todos <ArrowRight :size="15" /></RouterLink></div>
-        <div v-if="role === 'alumno'" class="activity-preview-list">
-          <article v-for="activity in nextActivities" :key="activity.id" class="activity-preview"><span class="activity-preview__date"><CalendarDays :size="17" /></span><div><strong>{{ activity.title }}</strong><small>{{ activity.subject }} · Entrega {{ activity.dueDate }}</small></div><StatusBadge :status="activity.status" /></article>
-          <p v-if="!nextActivities.length" class="muted-empty">No tenés actividades pendientes.</p>
-        </div>
-        <div v-else class="notice-preview-list">
-          <article v-for="notice in recentNotices" :key="notice.id" class="notice-preview"><span class="notice-preview__icon"><Bell :size="17" /></span><div><strong>{{ notice.title }}</strong><small>{{ notice.audience }} · {{ notice.date }}</small></div><ArrowRight :size="16" /></article>
-        </div>
-      </section>
-      <section class="panel today-panel">
-        <div class="today-panel__top"><span><CalendarClock :size="17" /></span><span>JUEVES · 5 NOV</span></div>
-        <h2>{{ role === 'alumno' ? 'Tu día de clases' : role === 'profesor' ? 'Tu agenda de hoy' : 'La escuela en números' }}</h2>
-        <p>{{ role === 'administrador' ? 'La comunidad sigue en movimiento.' : 'Un vistazo a lo que viene.' }}</p>
-        <div v-if="role !== 'administrador'" class="agenda-list">
-          <div class="agenda-item"><time>08:00</time><i class="agenda-line"></i><div><b>{{ role === 'alumno' ? 'Matemática' : '3.º A · Matemática' }}</b><small>Aula 12 · Primer piso</small></div></div>
-          <div class="agenda-item"><time>10:15</time><i class="agenda-line agenda-line--rose"></i><div><b>{{ role === 'alumno' ? 'Lengua y Literatura' : '3.º B · Matemática' }}</b><small>Aula 8 · Segundo piso</small></div></div>
-          <div class="agenda-item"><time>12:00</time><i class="agenda-line agenda-line--green"></i><div><b>{{ role === 'alumno' ? 'Ciencias Naturales' : 'Reunión de departamento' }}</b><small>{{ role === 'alumno' ? 'Laboratorio' : 'Sala de profesores' }}</small></div></div>
-        </div>
-        <div v-else class="school-overview"><div><span class="overview-dot overview-dot--green"></span><strong>{{ school.students.length }} alumnos</strong><small>en la institución</small></div><div><span class="overview-dot overview-dot--blue"></span><strong>{{ school.courses.length }} cursos</strong><small>en dos turnos</small></div></div>
-        <RouterLink class="today-panel__link" :to="role === 'alumno' ? '/app/mis-cursos' : role === 'profesor' ? '/app/mis-cursos' : '/app/avisos'">{{ role === 'administrador' ? 'Ir a los avisos' : 'Ver mi agenda' }} <ArrowRight :size="15" /></RouterLink>
-      </section>
-    </div>
+    </template>
   </div>
 </template>

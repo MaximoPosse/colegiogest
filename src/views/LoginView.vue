@@ -1,42 +1,57 @@
 <script setup>
-import { computed, reactive } from 'vue'
-import { ArrowLeft, ArrowRight, BookOpenCheck, GraduationCap, LockKeyhole, Mail, ShieldCheck } from '@lucide/vue'
+import { computed, reactive, ref } from 'vue'
+import { ArrowLeft, ArrowRight, BookOpenCheck, LockKeyhole, Mail, ShieldCheck } from '@lucide/vue'
 import { useRoute, useRouter } from 'vue-router'
 import BaseButton from '../components/BaseButton.vue'
 import FormField from '../components/FormField.vue'
-import { demoUsers } from '../data/mockData'
-import { notify, session } from '../data/demoStore'
+import { describeError } from '../lib/errors'
+import { notify } from '../stores/toast'
+import { session, signIn } from '../stores/auth'
 
 const route = useRoute()
 const router = useRouter()
 const form = reactive({ email: '', password: '' })
 const errors = reactive({ email: '', password: '', form: '' })
-const demoAccounts = demoUsers.map((user) => ({ ...user, password: 'demo123' }))
+const loading = ref(false)
+
+const demoAccounts = [
+  { id: 'admin', name: 'María Fernanda', surname: 'Gómez', email: 'admin@colegiogest.edu.ar', role: 'administrador', initials: 'MG', password: 'demo123' },
+  { id: 'teacher', name: 'Santiago', surname: 'López', email: 'profesor@colegiogest.edu.ar', role: 'profesor', initials: 'SL', password: 'demo123' },
+  { id: 'student', name: 'Lucía', surname: 'Fernández', email: 'alumno@colegiogest.edu.ar', role: 'alumno', initials: 'LF', password: 'demo123' },
+]
 const selectedDemo = computed(() => demoAccounts.find((user) => user.email === form.email))
 
 function chooseDemo(user) {
   form.email = user.email
-  form.password = 'demo123'
+  form.password = user.password
   errors.email = ''
   errors.password = ''
   errors.form = ''
 }
 
-function signIn() {
-  errors.email = form.email ? (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email) ? '' : 'Ingresá un correo válido.') : 'El correo es obligatorio.'
+function validate() {
+  errors.email = form.email
+    ? /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())
+      ? ''
+      : 'Ingresá un correo válido.'
+    : 'El correo es obligatorio.'
   errors.password = form.password ? '' : 'La contraseña es obligatoria.'
   errors.form = ''
-  if (errors.email || errors.password) return
+  return !errors.email && !errors.password
+}
 
-  const user = demoAccounts.find((account) => account.email.toLowerCase() === form.email.trim().toLowerCase())
-  if (!user || user.password !== form.password) {
-    errors.form = 'No encontramos una cuenta de demostración con esos datos.'
-    return
+async function submit() {
+  if (!validate()) return
+  loading.value = true
+  try {
+    const user = await signIn(form.email, form.password)
+    notify(`¡Hola, ${user.name}! Iniciaste sesión correctamente.`)
+    router.push(typeof route.query.redirect === 'string' ? route.query.redirect : '/app')
+  } catch (error) {
+    errors.form = describeError(error, 'No pudimos iniciar sesión. Revisá tus datos.')
+  } finally {
+    loading.value = false
   }
-
-  session.user = { ...user }
-  notify(`¡Hola, ${user.name}! Iniciaste una sesión de demostración.`)
-  router.push(typeof route.query.redirect === 'string' ? route.query.redirect : '/app')
 }
 </script>
 
@@ -64,7 +79,10 @@ function signIn() {
         </div>
         <h2 id="login-title">Iniciar sesión</h2>
         <p class="auth-card__description">Ingresá tus datos para continuar.</p>
-        <form class="stack-form" novalidate @submit.prevent="signIn">
+        <p v-if="!session.configured" class="form-alert" role="alert">
+          Supabase no está configurado. Completá las variables de entorno para poder iniciar sesión.
+        </p>
+        <form class="stack-form" novalidate @submit.prevent="submit">
           <FormField id="email" label="Correo electrónico" :error="errors.email" required>
             <template #default="{ id }"><div class="input-with-icon"><Mail :size="17" /><input :id="id" v-model="form.email" type="email" autocomplete="username" placeholder="nombre@colegio.edu.ar" :aria-invalid="!!errors.email" /></div></template>
           </FormField>
@@ -73,11 +91,11 @@ function signIn() {
           </FormField>
           <RouterLink class="forgot-link" to="/recuperar">¿Olvidaste tu contraseña?</RouterLink>
           <p v-if="errors.form" class="form-alert" role="alert">{{ errors.form }}</p>
-          <BaseButton type="submit" class="auth-submit">Ingresar <ArrowRight :size="17" /></BaseButton>
+          <BaseButton type="submit" class="auth-submit" :disabled="loading">{{ loading ? 'Ingresando…' : 'Ingresar' }} <ArrowRight :size="17" /></BaseButton>
         </form>
         <div class="demo-access">
-          <div class="demo-access__title"><span>ACCESO DE PRUEBA</span><i></i></div>
-          <p>Elegí un perfil para completar los datos de ejemplo.</p>
+          <div class="demo-access__title"><span>CUENTAS DE PRUEBA</span><i></i></div>
+          <p>Elegí un perfil para completar el correo y la contraseña del seed.</p>
           <div class="demo-profiles">
             <button v-for="user in demoAccounts" :key="user.id" type="button" class="demo-profile" :class="{ 'demo-profile--selected': selectedDemo?.id === user.id }" @click="chooseDemo(user)">
               <span class="demo-profile__avatar">{{ user.initials }}</span><span><strong>{{ user.role }}</strong><small>{{ user.email }}</small></span>
@@ -85,9 +103,9 @@ function signIn() {
           </div>
           <span class="demo-access__password"><LockKeyhole :size="13" /> Contraseña para todos: <b>demo123</b></span>
         </div>
-        <div class="auth-card__footer"><ShieldCheck :size="15" /> Tus datos están protegidos por ColegioGest</div>
+        <div class="auth-card__footer"><ShieldCheck :size="15" /> Autenticación segura con Supabase Auth</div>
       </section>
     </main>
-    <footer class="public-footer"><span>© 2026 ColegioGest · Sistema de gestión escolar</span><span>Acceso de demostración · Sin conexión a datos reales</span></footer>
+    <footer class="public-footer"><span>© 2026 ColegioGest · Sistema de gestión escolar</span><span>Acceso protegido con Supabase</span></footer>
   </div>
 </template>

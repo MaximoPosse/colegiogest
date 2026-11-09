@@ -1,17 +1,22 @@
 <script setup>
 import { Bell, LogOut, Menu, X } from '@lucide/vue'
 import { useRouter } from 'vue-router'
-import { session } from '../data/demoStore'
-import { notify } from '../data/demoStore'
+import { describeError } from '../lib/errors'
+import { notify } from '../stores/toast'
+import { session, signOut } from '../stores/auth'
 
 defineProps({ menuOpen: { type: Boolean, default: false } })
 const emit = defineEmits(['toggle-menu'])
 const router = useRouter()
 
-function signOut() {
-  session.user = null
-  notify('Sesión de demostración cerrada.')
-  router.push('/')
+async function handleSignOut() {
+  try {
+    await signOut()
+    notify('Cerraste sesión correctamente.')
+  } catch (error) {
+    notify(describeError(error, 'No pudimos cerrar la sesión.'), 'error')
+  }
+  router.push('/login')
 }
 </script>
 
@@ -30,9 +35,9 @@ function signOut() {
       <RouterLink class="icon-button header-notice" to="/app/avisos" aria-label="Ver avisos"><Bell :size="19" /><span class="notification-dot"></span></RouterLink>
       <RouterLink class="header-user" to="/app/perfil">
         <span class="avatar">{{ session.user?.initials }}</span>
-        <span class="header-user__info"><strong>{{ session.user?.name }} {{ session.user?.surname }}</strong><small>{{ session.user?.role }}</small></span>
+        <span class="header-user__info"><strong>{{ session.user?.name }} {{ session.user?.surname }}</strong><small>{{ session.user?.roleLabel }}</small></span>
       </RouterLink>
-      <button class="icon-button signout-button" type="button" aria-label="Cerrar sesión" title="Cerrar sesión" @click="signOut"><LogOut :size="18" /></button>
+      <button class="icon-button signout-button" type="button" aria-label="Cerrar sesión" title="Cerrar sesión" @click="handleSignOut"><LogOut :size="18" /></button>
     </div>
   </header>
 </template>

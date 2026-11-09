@@ -3,6 +3,7 @@ import AppLayout from '../layouts/AppLayout.vue'
 import HomeView from '../views/HomeView.vue'
 import LoginView from '../views/LoginView.vue'
 import RecoverView from '../views/RecoverView.vue'
+import ResetPasswordView from '../views/ResetPasswordView.vue'
 import DashboardView from '../views/DashboardView.vue'
 import StudentsView from '../views/StudentsView.vue'
 import StudentFormView from '../views/StudentFormView.vue'
@@ -15,12 +16,13 @@ import CatalogView from '../views/CatalogView.vue'
 import CoursesView from '../views/CoursesView.vue'
 import AccessDeniedView from '../views/AccessDeniedView.vue'
 import NotFoundView from '../views/NotFoundView.vue'
-import { session } from '../data/demoStore'
+import { initAuth, session } from '../stores/auth'
 
 const routes = [
   { path: '/', name: 'home', component: HomeView, meta: { public: true } },
   { path: '/login', name: 'login', component: LoginView, meta: { public: true } },
   { path: '/recuperar', name: 'recover', component: RecoverView, meta: { public: true } },
+  { path: '/restablecer', name: 'reset-password', component: ResetPasswordView, meta: { public: true } },
   {
     path: '/app',
     component: AppLayout,
@@ -52,14 +54,12 @@ const router = createRouter({
   scrollBehavior: () => ({ top: 0 }),
 })
 
-function dashboardPath(role) {
-  return role ? '/app' : '/login'
-}
+router.beforeEach(async (to) => {
+  await initAuth()
 
-router.beforeEach((to) => {
   if (to.meta.public) {
     if (session.user && (to.name === 'login' || to.name === 'home')) {
-      return dashboardPath(session.user.role)
+      return '/app'
     }
     return true
   }

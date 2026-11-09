@@ -5,12 +5,12 @@ import {
   BookOpen, CalendarCheck, CalendarDays, ClipboardList, GraduationCap,
   LayoutDashboard, Megaphone, Settings2, UserRound, Users, X,
 } from '@lucide/vue'
-import { session } from '../data/demoStore'
+import { session } from '../stores/auth'
 
 defineProps({ open: { type: Boolean, default: false } })
 const emit = defineEmits(['close'])
 const route = useRoute()
-const role = computed(() => session.user?.role ?? 'administrador')
+const role = computed(() => session.user?.role ?? 'alumno')
 
 const menus = {
   administrador: [
@@ -77,7 +77,7 @@ function isActive(path) {
       </div>
     </nav>
     <div class="side-menu__footer">
-      <div class="side-menu__help"><Settings2 :size="17" /><span>Entorno de demostración</span></div>
+      <div class="side-menu__help"><Settings2 :size="17" /><span>Datos sincronizados con Supabase</span></div>
       <span>© 2026 ColegioGest</span>
     </div>
   </aside>
