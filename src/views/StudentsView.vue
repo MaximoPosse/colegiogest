@@ -1,13 +1,13 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
-import { ArrowDownToLine, ArrowRight, MoreHorizontal, Plus, Search, Trash2, UserRoundPlus } from '@lucide/vue'
+import { ArrowDownToLine, ArrowRight, MoreHorizontal, Trash2, UserRoundPlus } from '@lucide/vue'
 import { useRouter } from 'vue-router'
 import BaseButton from '../components/BaseButton.vue'
 import DataTable from '../components/DataTable.vue'
 import SearchFilterBar from '../components/SearchFilterBar.vue'
 import StatusBadge from '../components/StatusBadge.vue'
 import { describeError } from '../lib/errors'
-import { deactivateStudent, fetchCourses, fetchStudents } from '../services/school'
+import { deactivateStudent, fetchCourses, fetchStudents, fetchStudentsPage } from '../services/school'
 import { notify } from '../stores/toast'
 
 const router = useRouter()
@@ -15,12 +15,14 @@ const search = ref('')
 const courseFilter = ref('')
 const selectedForDelete = ref(null)
 const page = ref(1)
-const pageSize = 5
+const pageSize = 10
+const total = ref(0)
 const students = ref([])
 const courses = ref([])
 const loading = ref(true)
 const error = ref('')
 const saving = ref(false)
+let searchTimer = null
 
 const filters = computed(() => [
   {
@@ -33,12 +35,6 @@ const filters = computed(() => [
     ],
   },
 ])
-const filteredStudents = computed(() => students.value.filter((student) => {
-  const term = search.value.trim().toLocaleLowerCase('es')
-  const matchesSearch = !term || `${student.name} ${student.surname} ${student.dni} ${student.email}`.toLocaleLowerCase('es').includes(term)
-  return matchesSearch && (!courseFilter.value || student.courseId === courseFilter.value)
-}))
-const visibleStudents = computed(() => filteredStudents.value.slice((page.value - 1) * pageSize, page.value * pageSize))
 const columns = [
   { key: 'student', label: 'Alumno' },
   { key: 'dni', label: 'DNI' },
@@ -48,17 +44,40 @@ const columns = [
   { key: 'actions', label: '' },
 ]
 
+function scheduleLoad() {
+  clearTimeout(searchTimer)
+  searchTimer = setTimeout(loadStudents, 250)
+}
+
 watch([search, courseFilter], () => {
-  page.value = 1
+  if (page.value !== 1) {
+    page.value = 1
+    return
+  }
+  scheduleLoad()
+})
+
+watch(page, () => {
+  loadStudents()
 })
 
 async function loadStudents() {
   loading.value = true
   error.value = ''
   try {
-    const [studentRows, courseRows] = await Promise.all([fetchStudents(), fetchCourses()])
-    students.value = studentRows
-    courses.value = courseRows
+    const { rows, total: count } = await fetchStudentsPage({
+      courseId: courseFilter.value || undefined,
+      search: search.value,
+      page: page.value,
+      pageSize,
+    })
+    const lastPage = Math.max(1, Math.ceil(count / pageSize))
+    if (page.value > lastPage) {
+      page.value = lastPage
+      return
+    }
+    students.value = rows
+    total.value = count
   } catch (caught) {
     error.value = describeError(caught)
     notify(error.value, 'error')
@@ -67,7 +86,18 @@ async function loadStudents() {
   }
 }
 
-onMounted(loadStudents)
+async function loadCourses() {
+  try {
+    courses.value = await fetchCourses()
+  } catch (caught) {
+    notify(describeError(caught), 'error')
+  }
+}
+
+onMounted(() => {
+  loadCourses()
+  loadStudents()
+})
 
 function setFilter({ key, value }) {
   if (key === 'course') courseFilter.value = value
@@ -89,15 +119,26 @@ async function deleteStudent() {
   }
 }
 
-function exportCsv() {
-  const rows = [['Nombre', 'Apellido', 'DNI', 'Correo', 'Curso', 'Estado'], ...filteredStudents.value.map((student) => [student.name, student.surname, student.dni, student.email, student.course, student.status])]
-  const csv = rows.map((row) => row.map((field) => `"${String(field).replaceAll('"', '""')}"`).join(';')).join('\r\n')
-  const link = document.createElement('a')
-  link.href = URL.createObjectURL(new Blob(['\uFEFF', csv], { type: 'text/csv;charset=utf-8' }))
-  link.download = 'alumnos-colegiogest.csv'
-  link.click()
-  URL.revokeObjectURL(link.href)
-  notify('La lista de alumnos se descargó correctamente.')
+async function exportCsv() {
+  try {
+    const allStudents = await fetchStudents({
+      courseId: courseFilter.value || undefined,
+      search: search.value,
+    })
+    const rows = [
+      ['Nombre', 'Apellido', 'DNI', 'Correo', 'Curso', 'Estado'],
+      ...allStudents.map((student) => [student.name, student.surname, student.dni, student.email, student.course, student.status]),
+    ]
+    const csv = rows.map((row) => row.map((field) => `"${String(field).replaceAll('"', '""')}"`).join(';')).join('\r\n')
+    const link = document.createElement('a')
+    link.href = URL.createObjectURL(new Blob(['\uFEFF', csv], { type: 'text/csv;charset=utf-8' }))
+    link.download = 'alumnos-colegiogest.csv'
+    link.click()
+    URL.revokeObjectURL(link.href)
+    notify('La lista de alumnos se descargó correctamente.')
+  } catch (caught) {
+    notify(describeError(caught), 'error')
+  }
 }
 </script>
 
@@ -109,11 +150,11 @@ function exportCsv() {
     </div>
     <section class="panel list-panel">
       <div class="list-panel__top">
-        <div><h2>Listado de alumnos</h2><p>{{ filteredStudents.length }} {{ filteredStudents.length === 1 ? 'estudiante' : 'estudiantes' }} encontrados</p></div>
-        <BaseButton variant="outline" :disabled="!filteredStudents.length" @click="exportCsv"><ArrowDownToLine :size="16" /> Exportar</BaseButton>
+        <div><h2>Listado de alumnos</h2><p>{{ total }} {{ total === 1 ? 'estudiante' : 'estudiantes' }} encontrados</p></div>
+        <BaseButton variant="outline" :disabled="!total" @click="exportCsv"><ArrowDownToLine :size="16" /> Exportar</BaseButton>
       </div>
       <SearchFilterBar v-model="search" placeholder="Buscar por nombre, DNI o correo..." :filters="filters" @filter="setFilter" />
-      <DataTable :columns="columns" :rows="visibleStudents" :empty-title="loading ? 'Cargando alumnos...' : 'No encontramos alumnos'" :empty-text="loading ? 'Estamos consultando la base de datos.' : 'Probá con otro nombre, DNI o curso.'">
+      <DataTable :columns="columns" :rows="students" :empty-title="loading ? 'Cargando alumnos...' : 'No encontramos alumnos'" :empty-text="loading ? 'Estamos consultando la base de datos.' : 'Probá con otro nombre, DNI o curso.'">
         <template #cell="{ row, column }">
           <template v-if="column.key === 'student'">
             <button type="button" class="student-cell" @click="router.push(`/app/alumnos/${row.id}/editar`)"><span class="avatar avatar--table">{{ row.name.charAt(0) }}{{ row.surname.charAt(0) }}</span><span><strong>{{ row.surname }}, {{ row.name }}</strong><small>Estudiante</small></span></button>
@@ -126,9 +167,9 @@ function exportCsv() {
           <span v-else>{{ row[column.key] }}</span>
         </template>
       </DataTable>
-      <div v-if="filteredStudents.length" class="table-footer">
-        <span>Mostrando {{ (page - 1) * pageSize + 1 }}–{{ Math.min(page * pageSize, filteredStudents.length) }} de {{ filteredStudents.length }}</span>
-        <div class="pagination"><button type="button" :disabled="page === 1" @click="page--">Anterior</button><button type="button" :disabled="page * pageSize >= filteredStudents.length" @click="page++">Siguiente <ArrowRight :size="14" /></button></div>
+      <div v-if="total" class="table-footer">
+        <span>Mostrando {{ (page - 1) * pageSize + 1 }}–{{ Math.min(page * pageSize, total) }} de {{ total }}</span>
+        <div class="pagination"><button type="button" :disabled="page === 1" @click="page--">Anterior</button><button type="button" :disabled="page * pageSize >= total" @click="page++">Siguiente <ArrowRight :size="14" /></button></div>
       </div>
     </section>
     <div v-if="selectedForDelete" class="modal-backdrop" @click.self="selectedForDelete = null">

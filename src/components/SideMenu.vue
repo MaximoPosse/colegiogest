@@ -17,6 +17,7 @@ const menus = {
     { label: 'General', items: [{ label: 'Panel principal', to: '/app', icon: LayoutDashboard }] },
     { label: 'Gestión escolar', items: [
       { label: 'Alumnos', to: '/app/alumnos', icon: Users },
+      { label: 'Profesores', to: '/app/profesores', icon: GraduationCap },
       { label: 'Usuarios y roles', to: '/app/usuarios', icon: UserRound },
       { label: 'Cursos y materias', to: '/app/cursos', icon: BookOpen },
       { label: 'Inscripciones', to: '/app/inscripciones', icon: GraduationCap },
@@ -42,6 +43,7 @@ const menus = {
       { label: 'Panel principal', to: '/app', icon: LayoutDashboard },
       { label: 'Mis datos y materias', to: '/app/perfil', icon: UserRound },
       { label: 'Mis calificaciones', to: '/app/mis-calificaciones', icon: ClipboardList },
+      { label: 'Mis asistencias', to: '/app/mis-asistencias', icon: CalendarCheck },
       { label: 'Mis actividades', to: '/app/mis-actividades', icon: CalendarDays },
       { label: 'Avisos', to: '/app/avisos', icon: Megaphone },
     ] },

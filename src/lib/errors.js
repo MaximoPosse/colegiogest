@@ -4,9 +4,20 @@ const FRIENDLY_MESSAGES = {
   ALUMNO_NO_ENCONTRADO: 'No encontramos el alumno solicitado.',
   CURSO_NO_ENCONTRADO: 'No encontramos el curso solicitado.',
   PROFESOR_NO_ENCONTRADO: 'No encontramos el profesor solicitado.',
+  PROFESOR_CON_ASIGNACIONES:
+    'El profesor tiene asignaciones vigentes. Reasigná o eliminá esas asignaciones antes de darlo de baja.',
+  USUARIO_NO_ENCONTRADO: 'No encontramos el usuario solicitado.',
   ASIGNACION_NO_ENCONTRADA: 'No encontramos la asignación solicitada.',
   ASIGNACION_CON_HISTORIAL:
-    'No se puede eliminar la asignación porque tiene calificaciones, asistencias o actividades asociadas.',
+    'No se puede modificar o eliminar la asignación porque tiene calificaciones, asistencias o actividades asociadas.',
+  ASIGNACION_DUPLICADA: 'Ya existe una asignación con esa materia, curso, docente y ciclo lectivo.',
+  MATERIA_NO_ENCONTRADA: 'No encontramos la materia solicitada.',
+  DUPLICATE_MATERIA: 'Ya existe una materia con ese nombre.',
+  MATERIA_CON_ASIGNACIONES:
+    'No se puede eliminar la materia porque tiene asignaciones docentes. Eliminá primero esas asignaciones.',
+  MATERIA_CON_CALIFICACIONES: 'No se puede eliminar la materia porque tiene calificaciones registradas.',
+  MATERIA_CON_ASISTENCIAS: 'No se puede eliminar la materia porque tiene asistencias registradas.',
+  MATERIA_CON_ACTIVIDADES: 'No se puede eliminar la materia porque tiene actividades registradas.',
   '23505': 'El registro ya existe. Revisá el correo o el DNI.',
   '23503': 'No se puede eliminar el registro porque está vinculado con otros datos.',
   '42501': 'No tenés permisos para realizar esta operación.',

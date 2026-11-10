@@ -7,7 +7,9 @@ import ResetPasswordView from '../views/ResetPasswordView.vue'
 import DashboardView from '../views/DashboardView.vue'
 import StudentsView from '../views/StudentsView.vue'
 import StudentFormView from '../views/StudentFormView.vue'
+import TeachersView from '../views/TeachersView.vue'
 import AttendanceView from '../views/AttendanceView.vue'
+import MyAttendanceView from '../views/MyAttendanceView.vue'
 import GradesView from '../views/GradesView.vue'
 import ActivitiesView from '../views/ActivitiesView.vue'
 import NoticesView from '../views/NoticesView.vue'
@@ -31,11 +33,13 @@ const routes = [
       { path: 'alumnos', name: 'students', component: StudentsView, meta: { roles: ['administrador'] } },
       { path: 'alumnos/nuevo', name: 'student-new', component: StudentFormView, meta: { roles: ['administrador'] } },
       { path: 'alumnos/:id/editar', name: 'student-edit', component: StudentFormView, meta: { roles: ['administrador'] } },
+      { path: 'profesores', name: 'teachers', component: TeachersView, meta: { roles: ['administrador'] } },
       { path: 'usuarios', name: 'users', component: CatalogView, props: { section: 'usuarios' }, meta: { roles: ['administrador'] } },
       { path: 'cursos', name: 'catalog', component: CatalogView, props: { section: 'cursos' }, meta: { roles: ['administrador'] } },
       { path: 'inscripciones', name: 'enrollments', component: CatalogView, props: { section: 'inscripciones' }, meta: { roles: ['administrador'] } },
       { path: 'mis-cursos', name: 'courses', component: CoursesView, meta: { roles: ['profesor', 'alumno'] } },
       { path: 'asistencia', name: 'attendance', component: AttendanceView, meta: { roles: ['profesor'] } },
+      { path: 'mis-asistencias', name: 'my-attendance', component: MyAttendanceView, meta: { roles: ['alumno'] } },
       { path: 'calificaciones', name: 'grades', component: GradesView, meta: { roles: ['administrador', 'profesor'] } },
       { path: 'mis-calificaciones', name: 'my-grades', component: GradesView, meta: { roles: ['alumno'] } },
       { path: 'actividades', name: 'activities', component: ActivitiesView, meta: { roles: ['administrador', 'profesor'] } },

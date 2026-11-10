@@ -9,6 +9,7 @@ import {
   mapGrade,
   mapNotice,
   mapStudent,
+  mapSubject,
   mapTeacher,
   mapUser,
 } from '../lib/mappers'
@@ -72,6 +73,42 @@ export async function fetchTeachers() {
   return (data ?? []).map(mapTeacher)
 }
 
+export async function fetchTeacherList() {
+  const data = await run(
+    db().from('v_profesores').select('*').order('apellido').order('nombre'),
+  )
+  return (data ?? []).map(mapTeacher)
+}
+
+export async function createTeacher({ nombre, apellido, dni, correo, password }) {
+  return run(
+    db().rpc('admin_crear_profesor', {
+      p_nombre: nombre.trim(),
+      p_apellido: apellido.trim(),
+      p_dni: dni,
+      p_correo: correo.trim().toLowerCase(),
+      p_password: password || 'demo123',
+    }),
+  )
+}
+
+export async function updateTeacher(profesorId, { nombre, apellido, dni, correo, estado }) {
+  return run(
+    db().rpc('admin_actualizar_profesor', {
+      p_profesor_id: profesorId,
+      p_nombre: nombre.trim(),
+      p_apellido: apellido.trim(),
+      p_dni: dni,
+      p_correo: correo.trim().toLowerCase(),
+      p_estado: estado,
+    }),
+  )
+}
+
+export async function deactivateTeacher(profesorId) {
+  return run(db().rpc('admin_baja_profesor', { p_profesor_id: profesorId }))
+}
+
 export async function fetchUsers() {
   const data = await run(
     db()
@@ -81,6 +118,15 @@ export async function fetchUsers() {
       .order('nombre'),
   )
   return (data ?? []).map(mapUser)
+}
+
+export async function changeUserRole(usuarioId, rol) {
+  return run(
+    db().rpc('admin_cambiar_rol_usuario', {
+      p_usuario_id: usuarioId,
+      p_rol: rol,
+    }),
+  )
 }
 
 export async function setUserStatus(id, estado) {
@@ -95,6 +141,36 @@ export async function setUserStatus(id, estado) {
 // ---------------------------------------------------------------------------
 // Materias y asignaciones
 // ---------------------------------------------------------------------------
+export async function fetchSubjects() {
+  const data = await run(
+    db().from('materias').select('id, nombre, descripcion').order('nombre'),
+  )
+  return (data ?? []).map(mapSubject)
+}
+
+export async function createSubject({ nombre, descripcion }) {
+  return run(
+    db().rpc('admin_crear_materia', {
+      p_nombre: nombre.trim(),
+      p_descripcion: descripcion?.trim() || null,
+    }),
+  )
+}
+
+export async function updateSubject(id, { nombre, descripcion }) {
+  return run(
+    db().rpc('admin_actualizar_materia', {
+      p_materia_id: id,
+      p_nombre: nombre.trim(),
+      p_descripcion: descripcion?.trim() || null,
+    }),
+  )
+}
+
+export async function deleteSubject(id) {
+  return run(db().rpc('admin_eliminar_materia', { p_materia_id: id }))
+}
+
 export async function fetchAssignments({ courseId, teacherId, year } = {}) {
   let query = db().from('v_asignaciones').select('*').order('materia')
   if (courseId) query = query.eq('id_curso', courseId)
@@ -117,6 +193,16 @@ export async function createAssignment({ materia, courseId, teacherId, year, des
   return id
 }
 
+export async function updateAssignment(id, { teacherId, year }) {
+  return run(
+    db().rpc('admin_actualizar_asignacion', {
+      p_asignacion_id: id,
+      p_profesor_id: teacherId,
+      p_anio_lectivo: Number(year),
+    }),
+  )
+}
+
 export async function deleteAssignment(id) {
   return run(db().rpc('admin_eliminar_asignacion', { p_asignacion_id: id }))
 }
@@ -135,6 +221,27 @@ export async function fetchStudents({ courseId, search } = {}) {
   }
   const data = await run(query)
   return (data ?? []).map(mapStudent)
+}
+
+export async function fetchStudentsPage({ courseId, search, page = 1, pageSize = 10 } = {}) {
+  const from = (Math.max(1, page) - 1) * pageSize
+  const to = from + pageSize - 1
+  let query = db()
+    .from('v_alumnos')
+    .select('*', { count: 'exact' })
+    .order('apellido')
+    .order('nombre')
+    .range(from, to)
+  if (courseId) query = query.eq('id_curso', courseId)
+  const term = cleanSearch(search)
+  if (term) {
+    query = query.or(
+      `nombre.ilike.%${term}%,apellido.ilike.%${term}%,dni.ilike.%${term}%,correo.ilike.%${term}%`,
+    )
+  }
+  const { data, count, error } = await query
+  if (error) throw error
+  return { rows: (data ?? []).map(mapStudent), total: count ?? 0 }
 }
 
 export async function fetchStudent(alumnoId) {
@@ -255,11 +362,12 @@ export async function deleteGrade(id) {
 // ---------------------------------------------------------------------------
 // Asistencias
 // ---------------------------------------------------------------------------
-export async function fetchAttendance({ courseId, subjectId, date }) {
+export async function fetchAttendance({ courseId, subjectId, date, studentId } = {}) {
   let query = db().from('v_asistencias').select('*').order('alumno')
   if (courseId) query = query.eq('id_curso', courseId)
   if (subjectId) query = query.eq('id_materia', subjectId)
   if (date) query = query.eq('fecha', date)
+  if (studentId) query = query.eq('id_alumno', studentId)
   const data = await run(query)
   return (data ?? []).map(mapAttendance)
 }
@@ -300,6 +408,21 @@ export async function createActivity(payload) {
         id_curso: payload.cursoId,
         id_profesor: payload.profesorId,
       })
+      .select('*')
+      .single(),
+  )
+}
+
+export async function updateActivity(id, payload) {
+  return run(
+    db()
+      .from('actividades')
+      .update({
+        titulo: payload.titulo.trim(),
+        descripcion: payload.descripcion.trim(),
+        fecha_entrega: payload.fechaEntrega,
+      })
+      .eq('id', id)
       .select('*')
       .single(),
   )
@@ -346,6 +469,22 @@ export async function createNotice(payload) {
         id_autor: payload.autorId,
         id_curso_destino: payload.cursoId || null,
       })
+      .select('*')
+      .single(),
+  )
+}
+
+export async function updateNotice(id, payload) {
+  return run(
+    db()
+      .from('avisos')
+      .update({
+        titulo: payload.titulo.trim(),
+        contenido: payload.contenido.trim(),
+        categoria: payload.categoria,
+        id_curso_destino: payload.cursoId || null,
+      })
+      .eq('id', id)
       .select('*')
       .single(),
   )

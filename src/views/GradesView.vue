@@ -226,7 +226,7 @@ async function removeGrade(grade) {
     <section class="panel list-panel">
       <div class="list-panel__top"><div><h2>{{ isStudent ? 'Detalle por materia' : 'Registro de calificaciones' }}</h2><p>{{ visibleGrades.length }} registros encontrados</p></div><span v-if="!isStudent" class="table-helper">Ingresá notas entre 1 y 10</span></div>
       <SearchFilterBar v-model="search" :placeholder="isStudent ? 'Buscar por materia o instancia...' : 'Buscar por alumno, materia o instancia...'" :filters="filters" @filter="updateFilter" />
-      <DataTable :columns="columns" :rows="visibleGrades" :empty-title="loading ? 'Cargando calificaciones...' : 'Todavía no hay calificaciones'" :empty-text="loading ? 'Estamos consultando la base de datos.' : 'Cuando se registren notas, las vas a encontrar acá.'">
+      <DataTable :columns="columns" :rows="visibleGrades" paginated :page-size="10" :empty-title="loading ? 'Cargando calificaciones...' : 'Todavía no hay calificaciones'" :empty-text="loading ? 'Estamos consultando la base de datos.' : 'Cuando se registren notas, las vas a encontrar acá.'">
         <template #cell="{ row, column }">
           <strong v-if="column.key === 'grade'" class="grade-mark" :class="{ 'grade-mark--pass': row.grade >= 6 }">
             <template v-if="!isStudent"><input v-model="drafts[row.id]" class="grade-input" type="number" min="1" max="10" :aria-label="`Nota de ${row.student} en ${row.subject}`" :placeholder="String(row.grade)" /><span>/ 10</span></template>

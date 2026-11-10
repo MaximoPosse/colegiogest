@@ -88,6 +88,15 @@ export function mapEnrollment(row) {
   }
 }
 
+export function mapSubject(row) {
+  return {
+    id: row.id,
+    name: row.nombre,
+    description: row.descripcion ?? '',
+    assignmentCount: Number(row.asignaciones?.[0]?.count ?? row.assignment_count ?? 0),
+  }
+}
+
 export function mapAssignment(row) {
   const curso = { anio: row.anio, division: row.division, turno: row.turno }
   return {

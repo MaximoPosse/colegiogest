@@ -2,7 +2,7 @@
 
 Aplicación web de gestión escolar desarrollada con **Vue 3 + Vite** y **Supabase** (PostgreSQL + Auth). Permite administrar alumnos, cursos, materias, inscripciones, calificaciones, asistencias, actividades y avisos con permisos diferenciados para administradores, profesores y alumnos.
 
-La Etapa 6 incorporó la base de datos real, autenticación, RLS y la conexión de todas las vistas. Los datos mock fueron eliminados.
+La Etapa 6 incorporó la base de datos real, autenticación, RLS y la conexión de todas las vistas. Los datos mock fueron eliminados. La etapa de completado agregó la gestión de profesores, el cambio de rol de usuarios, la edición de materias/asignaciones/actividades/avisos, la vista de asistencias del alumno y la paginación de listados (ver `docs/ETAPA6_COMPLETADO.md`).
 
 ## Stack
 
@@ -56,7 +56,7 @@ psql "<connection-string>" -f supabase/seed.sql
 **Manualmente** desde el Dashboard (opción rápida):
 
 1. Abrir **SQL Editor**.
-2. Copiar todo el contenido de `supabase/setup_completo.sql` y ejecutarlo una sola vez. Ese archivo ya contiene, en orden, las cinco migraciones y el seed.
+2. Copiar todo el contenido de `supabase/setup_completo.sql` y ejecutarlo una sola vez. Ese archivo ya contiene, en orden, las ocho migraciones y el seed.
 3. Esperar el mensaje `Seed de ColegioGest cargado correctamente.`.
 
 **Manualmente** por archivos:
@@ -69,6 +69,8 @@ psql "<connection-string>" -f supabase/seed.sql
    - `20261106000400_rls_policies.sql`
    - `20261106000500_views.sql`
    - `20261106000600_fix_v_avisos.sql`
+   - `20261110000100_admin_profesores_roles.sql`
+   - `20261110000200_materias_asignaciones.sql`
 3. Ejecutar `supabase/seed.sql`.
 
 ### 2. Configurar Auth
@@ -107,25 +109,29 @@ Todas las cuentas del seed usan la contraseña **`demo123`**.
 
 - Panel con métricas generales.
 - Alta, edición, baja lógica y exportación CSV de alumnos.
+- Alta, edición y baja de profesores (RF05), con cuenta de Auth incluida.
+- Cambio de rol de usuarios: alumno ⇄ profesor ⇄ administrador, sin perder el historial.
 - Activación/desactivación de cuentas.
 - Alta, edición y eliminación de cursos.
-- Creación y eliminación de asignaciones docente–materia–curso.
+- Alta, edición y eliminación de materias; solo se borran si no tienen datos asociados.
+- Creación, edición y eliminación de asignaciones docente–materia–curso.
 - Gestión de inscripciones (con historial).
 - Calificaciones, actividades y avisos.
 
 ### Profesor
 
 - Panel con sus cursos y alumnos.
-- Registro de asistencia por curso, materia y fecha.
+- Registro de asistencia por curso, materia y fecha (una fecha ya registrada se actualiza, no se duplica).
 - Carga, edición y eliminación de calificaciones.
-- Publicación y eliminación de actividades.
-- Avisos para sus cursos.
+- Publicación, edición y eliminación de sus propias actividades.
+- Avisos para sus cursos: publicar, editar y eliminar los propios.
 
 ### Alumno
 
 - Panel con promedio, asistencia y actividades pendientes.
 - Consulta de sus calificaciones.
 - Consulta de sus materias y horarios.
+- Consulta de sus asistencias con porcentaje por materia (`/app/mis-asistencias`).
 - Marcado de actividades como entregadas.
 - Avisos institucionales y de su curso.
 
@@ -154,6 +160,7 @@ npm run preview  # previsualizar el build
 ```text
 src/
   components/        componentes reutilizables
+  components/catalog secciones separadas del catálogo (usuarios, cursos, materias, inscripciones)
   layouts/           layout de la aplicación autenticada
   lib/               cliente Supabase, mappers, errores y formato
   router/            rutas y guard por rol
@@ -163,10 +170,12 @@ src/
 supabase/
   migrations/        migraciones SQL ordenadas
   seed.sql           datos ficticios de demostración
+  dev/               scripts de utilidad para pruebas (limpieza de datos de prueba)
 docs/
   ANALISIS_DATOS_ETAPA3.md
   ETAPA6.md
   PRUEBAS_ETAPA6.md
+  ETAPA6_COMPLETADO.md
 ```
 
 ## Documentación
@@ -175,19 +184,33 @@ docs/
 - [Documentación técnica de la Etapa 6](docs/ETAPA6.md)
 - [Pruebas de la Etapa 6](docs/PRUEBAS_ETAPA6.md)
 
-## Estado de la Etapa 6
+## Documentación
+
+- [Análisis de datos de la Etapa 3](docs/ANALISIS_DATOS_ETAPA3.md)
+- [Documentación técnica de la Etapa 6](docs/ETAPA6.md)
+- [Pruebas de la Etapa 6](docs/PRUEBAS_ETAPA6.md)
+- [Cambios de la etapa de completado](docs/ETAPA6_COMPLETADO.md)
+
+## Estado
 
 | Ítem | Estado |
 | --- | --- |
 | Esquema normalizado, claves, restricciones e índices | ✅ Aplicado en Supabase |
 | RLS y permisos por rol | ✅ Aplicado y probado |
-| Supabase Auth y recuperación de contraseña | ✅ Aplicado; correo pendiente de configurar |
+| Supabase Auth y recuperación de contraseña | ✅ Aplicado |
 | Conexión de vistas y CRUD a Supabase | ✅ Implementado |
 | Eliminación de datos mock | ✅ Implementado |
+| Gestión de profesores (RF05) | ✅ Implementado (migración 007; SQL pendiente de aplicar por el usuario) |
+| Cambio de rol de usuarios (RF03) | ✅ Implementado (migración 007; SQL pendiente de aplicar por el usuario) |
+| Edición de actividades y avisos propios (RF12/RF14) | ✅ Implementado |
+| Materias y asignaciones editables (RF07) | ✅ Implementado (migración 008; SQL pendiente de aplicar por el usuario) |
+| Mis asistencias del alumno (RF11) | ✅ Implementado |
+| Paginación y filtros de listados (RF18/RNF05) | ✅ Implementado |
 | Build de producción | ✅ Verificado |
-| Migraciones y seed en el proyecto remoto | ✅ Aplicados el 2026-11-07 |
+| Migraciones 001–006 y seed en el proyecto remoto | ✅ Aplicados el 2026-11-07 |
+| Migraciones 007–008 en el proyecto remoto | ⏳ SQL listo; el usuario lo ejecuta manualmente |
 | Pruebas de login, RLS y escritura por API | ✅ Ejecutadas |
 | Flujos principales de UI (login, avisos, notas, asistencia, actividades y guardas) | ✅ Verificados en navegador |
-| Alta/edición de alumnos, baja lógica y recuperación de correo | ⏳ Pendientes de recorrido manual |
+| Alta/edición de alumnos, profesores, cambio de rol y cambio de curso | ⏳ Pendientes de recorrido manual (ver `docs/ETAPA6_COMPLETADO.md`) |
 
-Ver [docs/PRUEBAS_ETAPA6.md](docs/PRUEBAS_ETAPA6.md) para el detalle de lo ejecutado y los pasos manuales pendientes.
+Ver [docs/PRUEBAS_ETAPA6.md](docs/PRUEBAS_ETAPA6.md) y [docs/ETAPA6_COMPLETADO.md](docs/ETAPA6_COMPLETADO.md) para el detalle.

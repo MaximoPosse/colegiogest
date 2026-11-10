@@ -2,6 +2,8 @@
 
 Documentación técnica de la implementación de Supabase/PostgreSQL en ColegioGest.
 
+> **Actualización:** la etapa de completado agregó gestión de profesores, cambio de rol, edición de materias/asignaciones/actividades/avisos, Mis asistencias y paginación. Ver [`docs/ETAPA6_COMPLETADO.md`](./ETAPA6_COMPLETADO.md). Este documento describe la implementación original de la Etapa 6 y mantiene su vigencia para lo no modificado.
+
 ## 1. Resumen
 
 La Etapa 6 reemplaza los datos mock de `src/data` por un backend real en Supabase:
