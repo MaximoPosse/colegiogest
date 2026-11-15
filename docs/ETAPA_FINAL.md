@@ -132,7 +132,7 @@ Al pasar de datos mock a Supabase, los permisos no podían depender solo de boto
 - Base reproducible: `supabase/setup_completo.sql`, `supabase/migrations/001–010` y `supabase/seed.sql`.
 - Manual: `docs/MANUAL_USUARIO_ColegioGest.pdf` + fuente `docs/MANUAL_USUARIO.html`.
 - Informe de Etapa 8: `docs/INFORME_PRUEBAS_ETAPA8_ColegioGest.pdf` + fuente HTML.
-- Presentación: `docs/PRESENTACION_ColegioGest.pdf` + presentación interactiva HTML.
+- Presentación: `docs/PRESENTACION_ColegioGest.pptx` (editable), `docs/PRESENTACION_ColegioGest.pdf` y presentación interactiva HTML; `docs/generar_presentacion_pptx.py` reproduce el PPTX con Python y Pillow.
 - Este guion de arquitectura, resultados y defensa: `docs/ETAPA_FINAL.md`.
 
 **Reproducción:** `npm ci` → configurar `.env` → `npm run dev` o `npm run build`. No versionar `.env` ni credenciales privadas.

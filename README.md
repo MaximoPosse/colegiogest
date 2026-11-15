@@ -190,6 +190,8 @@ docs/
   INFORME_PRUEBAS_ETAPA8_ColegioGest.pdf informe final de pruebas
   PRESENTACION_ColegioGest.html  presentación navegable con flechas
   PRESENTACION_ColegioGest.pdf  presentación en diapositivas
+  PRESENTACION_ColegioGest.pptx presentación editable en PowerPoint
+  generar_presentacion_pptx.py  generador Open XML reproducible
   ETAPA_FINAL.md                 guía técnica y de defensa oral
   capturas-manual/                capturas usadas por el manual
 ```
@@ -205,8 +207,11 @@ docs/
 - [Informe de pruebas Etapa 8 (PDF)](docs/INFORME_PRUEBAS_ETAPA8_ColegioGest.pdf)
 - [Fuente editable del informe (HTML)](docs/INFORME_PRUEBAS_ETAPA8.html)
 - [Presentación final (PDF)](docs/PRESENTACION_ColegioGest.pdf)
+- [Presentación PowerPoint editable (PPTX)](docs/PRESENTACION_ColegioGest.pptx)
 - [Presentación interactiva editable (HTML)](docs/PRESENTACION_ColegioGest.html)
 - [Guía técnica y de defensa](docs/ETAPA_FINAL.md)
+
+Para regenerar el PPTX desde las capturas y el guion: instalar Pillow para Python y ejecutar `python docs/generar_presentacion_pptx.py`.
 
 ## Estado
 
