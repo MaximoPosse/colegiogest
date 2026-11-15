@@ -1,11 +1,14 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
-import { ShieldCheck, UserRound, X } from '@lucide/vue'
+import { computed, onMounted, reactive, ref } from 'vue'
+import { Plus, ShieldCheck, UserRound, X } from '@lucide/vue'
+import BaseButton from '../BaseButton.vue'
 import DataTable from '../DataTable.vue'
+import FormField from '../FormField.vue'
 import SearchFilterBar from '../SearchFilterBar.vue'
 import StatusBadge from '../StatusBadge.vue'
-import { describeError } from '../../lib/errors'
-import { changeUserRole, fetchUsers, setUserStatus } from '../../services/school'
+import { describeError, isDuplicateError } from '../../lib/errors'
+import { normalizeDni } from '../../lib/format'
+import { changeUserRole, createAdministrator, fetchUsers, setUserStatus } from '../../services/school'
 import { session } from '../../stores/auth'
 import { notify } from '../../stores/toast'
 
@@ -15,6 +18,10 @@ const roleFilter = ref('')
 const loading = ref(true)
 const saving = ref(false)
 const error = ref('')
+const showCreateForm = ref(false)
+const createFormError = ref('')
+const createErrors = reactive({})
+const createForm = reactive({ name: '', surname: '', dni: '', email: '', password: '' })
 
 const roleOptions = [
   { value: 'administrador', label: 'Administrador' },
@@ -68,6 +75,48 @@ async function loadUsers() {
 }
 
 onMounted(loadUsers)
+
+function openCreateForm() {
+  Object.keys(createErrors).forEach((key) => delete createErrors[key])
+  createFormError.value = ''
+  Object.assign(createForm, { name: '', surname: '', dni: '', email: '', password: '' })
+  showCreateForm.value = true
+}
+
+function validateCreateForm() {
+  Object.keys(createErrors).forEach((key) => delete createErrors[key])
+  createFormError.value = ''
+  if (!createForm.name.trim()) createErrors.name = 'El nombre es obligatorio.'
+  if (!createForm.surname.trim()) createErrors.surname = 'El apellido es obligatorio.'
+  if (!/^\d{7,9}$/.test(normalizeDni(createForm.dni))) createErrors.dni = 'El DNI debe tener entre 7 y 9 dígitos.'
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(createForm.email.trim())) createErrors.email = 'Ingresá un correo válido.'
+  if (!createForm.password || createForm.password.length < 6) createErrors.password = 'La contraseña debe tener al menos 6 caracteres.'
+  return Object.keys(createErrors).length === 0
+}
+
+async function saveAdministrator() {
+  if (saving.value || !validateCreateForm()) return
+  saving.value = true
+  try {
+    await createAdministrator({
+      nombre: createForm.name,
+      apellido: createForm.surname,
+      dni: normalizeDni(createForm.dni),
+      correo: createForm.email,
+      password: createForm.password,
+    })
+    showCreateForm.value = false
+    notify('La cuenta de administrador se creó correctamente.')
+    await loadUsers()
+  } catch (caught) {
+    if (isDuplicateError(caught, 'email')) createErrors.email = 'Ya existe un usuario con ese correo.'
+    else if (isDuplicateError(caught, 'dni')) createErrors.dni = 'Ya existe un usuario con ese DNI.'
+    else createFormError.value = describeError(caught)
+    notify(describeError(caught), 'error')
+  } finally {
+    saving.value = false
+  }
+}
 
 async function requestRoleChange(user, event) {
   const nextRole = event.target.value
@@ -124,7 +173,28 @@ async function toggleUserStatus(user) {
         <p>Consultá y administrá los perfiles de acceso al sistema.</p>
       </div>
       <span class="read-only-label"><ShieldCheck :size="16" /> Permisos en PostgreSQL</span>
+      <BaseButton @click="showCreateForm ? (showCreateForm = false) : openCreateForm()"><Plus :size="17" /> Nuevo administrador</BaseButton>
     </div>
+
+    <form v-if="showCreateForm" class="panel catalog-form" novalidate @submit.prevent="saveAdministrator">
+      <div class="panel-heading">
+        <div><h2>Crear cuenta administradora</h2><p>La nueva cuenta tendrá permisos de administración del sistema.</p></div>
+        <button type="button" class="icon-button" aria-label="Cerrar formulario" @click="showCreateForm = false"><X :size="18" /></button>
+      </div>
+      <div class="form-grid">
+        <FormField id="admin-name" label="Nombre" :error="createErrors.name" required><template #default="{ id }"><input :id="id" v-model="createForm.name" maxlength="80" autocomplete="given-name" /></template></FormField>
+        <FormField id="admin-surname" label="Apellido" :error="createErrors.surname" required><template #default="{ id }"><input :id="id" v-model="createForm.surname" maxlength="80" autocomplete="family-name" /></template></FormField>
+        <FormField id="admin-dni" label="DNI" :error="createErrors.dni" required><template #default="{ id }"><input :id="id" :value="createForm.dni" inputmode="numeric" @input="createForm.dni = normalizeDni($event.target.value)" /></template></FormField>
+        <FormField id="admin-email" label="Correo electrónico" :error="createErrors.email" required><template #default="{ id }"><input :id="id" v-model="createForm.email" type="email" autocomplete="email" /></template></FormField>
+        <FormField id="admin-password" label="Contraseña inicial" :error="createErrors.password" hint="Mínimo 6 caracteres." required><template #default="{ id }"><input :id="id" v-model="createForm.password" type="password" autocomplete="new-password" /></template></FormField>
+      </div>
+      <div v-if="createFormError" class="form-note form-note--error"><span>!</span><p>{{ createFormError }}</p></div>
+      <div class="form-note"><span>i</span><p>Comunicá la contraseña inicial por un canal seguro. No la incluyas en documentos compartidos.</p></div>
+      <div class="form-actions">
+        <BaseButton variant="outline" :disabled="saving" @click="showCreateForm = false">Cancelar</BaseButton>
+        <BaseButton type="submit" :disabled="saving"><Plus :size="16" /> {{ saving ? 'Creando…' : 'Crear administrador' }}</BaseButton>
+      </div>
+    </form>
 
     <section class="panel list-panel">
       <div class="list-panel__top">

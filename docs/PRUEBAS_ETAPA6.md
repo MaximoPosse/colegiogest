@@ -216,10 +216,16 @@ Verificación de solo lectura posterior: las funciones administrativas nuevas ex
 
 Se aplicó `20261115000100_security_hardening.sql` en el proyecto de producción y quedó registrada como migración 009. Verificaciones de solo lectura posteriores:
 
-- Las nueve migraciones aparecen sincronizadas entre el repositorio y el historial remoto.
+- Las diez migraciones aparecen sincronizadas entre el repositorio y el historial remoto.
 - `usuarios_update` exige rol administrador y excluye la propia fila; el trigger protege los campos personales además de rol y estado.
 - Las RPC públicas de alta tienen cero argumentos predeterminados y permiso `EXECUTE` para `authenticated`, no para `anon`. Las implementaciones heredadas quedaron revocadas para los roles de API.
 - La RPC general de estado contiene el bloqueo por asignaciones docentes vigentes.
 - Las funciones de validación de asistencia y calificaciones comprueban fechas futuras usando la zona horaria de Argentina.
 
 No se ejecutaron intentos de escritura para probar los rechazos en producción ni se modificaron datos escolares. Se recomienda completar esas pruebas negativas en un proyecto de pruebas aislado.
+
+## 9. Cierre de acceso · migración 010
+
+Se aplicó `20261115000200_admin_account_creation.sql` al proyecto Supabase Colegiogest y se registró como migración aplicada. Verificación de solo lectura: `admin_crear_administrador(text,text,text,text,text)` existe, no tiene argumentos predeterminados, permite `EXECUTE` a `authenticated` y lo deniega a `anon`. En navegador se comprobó que el formulario de alta aparece y valida campos vacíos. No se creó una cuenta nueva en producción.
+
+La aplicación también incorpora cierre por 30 minutos de inactividad. No se esperaron 30 minutos en una prueba temporal; queda recomendado probar el vencimiento completo en un entorno de pruebas.

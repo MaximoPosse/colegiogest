@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ColegioGest · Informe de pruebas y cumplimiento Etapa 8</title>
+  <style>
+    @page { size:A4 landscape; margin:10mm 12mm 12mm; }
+    :root { --navy:#102a43; --blue:#20547f; --sky:#eaf2f9; --ink:#273746; --muted:#5f7182; --line:#d4dfe8; --green:#176b48; --amber:#8f5a00; --red:#9b3030; }
+    * { box-sizing:border-box; }
+    body { margin:0; color:var(--ink); font:9pt/1.4 "Segoe UI",Arial,sans-serif; }
+    h1,h2,h3 { color:var(--navy); line-height:1.14; margin:0 0 6px; }
+    h1 { font-size:29pt; } h2 { font-size:19pt; } h3 { font-size:11pt; margin-top:10px; }
+    p { margin:0 0 7px; } ul,ol { margin:4px 0 8px; padding-left:19px; } li { margin:0 0 3px; }
+    strong { color:var(--navy); }
+    .page { position:relative; min-height:185mm; page-break-after:always; break-after:page; padding-bottom:9mm; }
+    .page:last-child { page-break-after:auto; break-after:auto; }
+    .brand { color:var(--navy); font-weight:800; font-size:10pt; letter-spacing:.4px; }
+    .eyebrow { color:var(--blue); text-transform:uppercase; letter-spacing:1.6px; font-size:8pt; font-weight:800; margin:0 0 7px; }
+    .page-head { display:flex; justify-content:space-between; align-items:flex-start; border-bottom:2px solid var(--sky); padding:0 0 6px; margin-bottom:9px; }
+    .page-head .section { color:var(--blue); font-size:7.5pt; font-weight:800; letter-spacing:1.2px; text-transform:uppercase; margin-bottom:4px; }
+    .lede { color:var(--muted); font-size:10pt; margin-bottom:9px; }
+    .footer { position:absolute; bottom:0; left:0; right:0; border-top:1px solid var(--line); padding-top:3px; color:#7d8c99; font-size:7.5pt; display:flex; justify-content:space-between; }
+    .cover { display:flex; flex-direction:column; justify-content:space-between; padding:8mm 0 4mm; }
+    .cover-band { background:linear-gradient(135deg,#133958,#2b79a8); color:#fff; border-radius:7mm; padding:15mm 17mm; margin:13mm 0 10mm; }
+    .cover-band h1 { color:#fff; max-width:220mm; }
+    .cover-band p { color:#e3f0fa; max-width:215mm; font-size:12pt; }
+    .tags { display:flex; gap:7px; margin-top:12px; }
+    .tag { background:#ffffff24; color:#fff; border-radius:20px; padding:4px 9px; font-size:8pt; font-weight:700; }
+    .summary-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+    .summary-card,.callout,.info-card { border:1px solid var(--line); border-radius:4mm; padding:8px 10px; background:#fff; }
+    .summary-card { background:#f6f9fc; }
+    .summary-card b { display:block; font-size:15pt; color:var(--blue); }
+    .summary-card span { color:var(--muted); font-size:8pt; }
+    .callout { background:var(--sky); border:0; border-left:4px solid var(--blue); margin:8px 0; }
+    .callout.warn { background:#fff6e6; border-left-color:#d08a11; }
+    .callout.good { background:#edf8f1; border-left-color:#278052; }
+    .callout.danger { background:#fff0ef; border-left-color:#bd4b45; }
+    table { width:100%; border-collapse:collapse; table-layout:fixed; margin:6px 0 8px; font-size:8.1pt; line-height:1.25; }
+    thead { display:table-header-group; }
+    tr { break-inside:avoid; page-break-inside:avoid; }
+    th { background:var(--blue); color:#fff; text-align:left; padding:5px 6px; font-size:7.8pt; }
+    td { border:1px solid var(--line); padding:5px 6px; vertical-align:top; overflow-wrap:anywhere; }
+    tbody tr:nth-child(even) td { background:#f7fafc; }
+    .table-note { color:var(--muted); font-size:7.7pt; margin:3px 0 6px; }
+    .state { font-weight:800; }
+    .pass { color:var(--green); } .pending { color:var(--amber); } .partial { color:#8a6500; } .future { color:#627488; }
+    .split { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .grid3 { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+    .info-card { background:#f8fafc; }
+    .info-card h3 { margin:0 0 5px; }
+    .small { font-size:7.8pt; color:var(--muted); }
+    .caps { color:var(--blue); text-transform:uppercase; font-size:7.5pt; letter-spacing:1px; font-weight:800; }
+    .keep { break-inside:avoid; page-break-inside:avoid; }
+    .check { color:var(--green); font-weight:800; }
+    .risk { color:var(--red); font-weight:800; }
+    .mono { font-family:Consolas,monospace; font-size:8pt; }
+    @media screen { body { background:#e9eef3; padding:18px; } .page { background:#fff; width:297mm; min-height:210mm; margin:0 auto 18px; padding:10mm 12mm 14mm; box-shadow:0 4px 20px #0e2c421c; } }
+  </style>
+</head>
+<body>
+  <section class="page cover">
+    <div>
+      <div class="brand">COLEGIOGEST · SISTEMA DE GESTIÓN ESCOLAR</div>
+      <div class="cover-band">
+        <p class="eyebrow" style="color:#d7eafa">PROYECTO INTEGRADOR PDISWD · ETAPA 8</p>
+        <h1>Informe de pruebas, requerimientos y documentación</h1>
+        <p>Estado de la versión, plan de pruebas, evidencia disponible, correcciones y limitaciones pendientes.</p>
+        <div class="tags"><span class="tag">Vue JS</span><span class="tag">Supabase</span><span class="tag">Actualizado · 15 nov 2026</span></div>
+      </div>
+      <h2>Resumen ejecutivo</h2>
+      <p class="lede">El informe coteja las consignas de Etapa 8 con el código y los registros existentes. Separa resultados históricos documentados, pruebas repetidas durante esta revisión y comprobaciones que aún necesitan un entorno de prueba.</p>
+      <div class="summary-grid">
+        <div class="summary-card"><b>23 RF</b><span>revisados frente a la versión actual</span></div>
+        <div class="summary-card"><b>10 RNF</b><span>evaluados con evidencia y límites</span></div>
+        <div class="summary-card"><b>25</b><span>casos definidos; algunos pendientes</span></div>
+        <div class="summary-card"><b>10/10</b><span>migraciones aplicadas y registradas</span></div>
+      </div>
+    </div>
+    <div>
+      <div class="callout good"><strong>Estado de compilación:</strong> <span class="check">npm run build aprobado</span>. Las migraciones 009 y 010 se aplicaron en Supabase de producción el 15/11/2026. Las verificaciones posteriores fueron de solo lectura; las pruebas negativas que requieren escrituras quedan para un entorno aislado.</div>
+      <div class="footer"><span>ColegioGest · Informe de pruebas Etapa 8</span><span>01</span></div>
+    </div>
+  </section>
+
+  <section class="page">
+    <div class="page-head"><div><div class="section">00 · Alcance</div><h2>Criterios y evidencia utilizada</h2></div><div class="brand">COLEGIOGEST</div></div>
+    <div class="split">
+      <div>
+        <h3>Qué se revisó</h3>
+        <ul>
+          <li>Los requerimientos de Etapa 2 y los registros de implementación/pruebas disponibles en el repositorio.</li>
+          <li>El código actual de vistas, servicios, componentes, router, migraciones SQL, políticas RLS y documentación.</li>
+          <li>La aplicación en navegador con cuentas de demostración para acceso por rol y dos filtros.</li>
+          <li>El catálogo remoto de Supabase en modo de solo lectura, después de aplicar las migraciones 009 y 010.</li>
+          <li>Instalación limpia en una copia temporal con <span class="mono">npm ci</span> y compilación de producción.</li>
+        </ul>
+        <h3>Qué no se hizo</h3>
+        <ul>
+          <li>No se crearon, editaron ni eliminaron registros escolares durante esta revisión.</li>
+          <li>No se midieron tiempos de rendimiento, compatibilidad en cuatro navegadores ni accesibilidad con Lighthouse/axe.</li>
+          <li>No se probaron envíos reales de correo, copias/restauraciones ni los rechazos del hardening con escrituras en producción.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Cómo interpretar estados</h3>
+        <div class="callout"><strong>Implementado:</strong> la funcionalidad existe en la versión actual. Las pruebas específicas pueden seguir pendientes.</div>
+        <div class="callout warn"><strong>Parcial / verificar:</strong> hay una limitación o falta una prueba operativa/medición.</div>
+        <div class="callout danger"><strong>Pendiente:</strong> no se dispone de evidencia suficiente para declarar cumplimiento.</div>
+        <div class="callout"><strong>V2:</strong> requerimiento explícitamente planificado para una versión futura; no se considera defecto de V1.</div>
+        <p class="small">Las pruebas PI/UI antiguas se citan como evidencia histórica de `docs/PRUEBAS_ETAPA6.md`; no se presentan como ejecutadas de nuevo. Las pruebas UI12–UI15 se realizaron en la revisión del 15/11/2026.</p>
+      </div>
+    </div>
+    <h3>Estado del entorno remoto</h3>
+    <p>Proyecto Supabase <strong>Colegiogest</strong> en producción. Las migraciones 001–010 aparecen sincronizadas. La migración 009 endurece perfiles, bajas y fechas; la 010 habilita el alta directa de administradores.</p>
+    <div class="callout warn"><strong>Criterio de seguridad:</strong> que la función o política exista y se haya inspeccionado no sustituye la prueba de comportamiento que demuestre el rechazo. No se realizaron pruebas destructivas en producción.</div>
+    <div class="footer"><span>ColegioGest · Criterios de evaluación</span><span>02</span></div>
+  </section>
+
+  <section class="page">
+    <div class="page-head"><div><div class="section">01 · Requerimientos funcionales</div><h2>Estado RF01–RF08</h2></div><div class="brand">COLEGIOGEST</div></div>
+    <table><colgroup><col style="width:9%"><col style="width:28%"><col style="width:20%"><col style="width:43%"></colgroup><thead><tr><th>Código</th><th>Requerimiento</th><th>Estado actual</th><th>Evidencia / dificultad / verificación pendiente</th></tr></thead><tbody>
+      <tr><td>RF01</td><td>Registro de usuario con datos personales, credenciales y rol.</td><td class="state pass">Implementado</td><td>Altas por rol: alumnos, profesores y nuevo administrador. Migración 010 aplicada; formulario vacío valida los campos. No se creó una cuenta nueva en esta revisión.</td></tr>
+      <tr><td>RF02</td><td>Inicio/cierre de sesión y redirección según rol.</td><td class="state pass">Implementado</td><td>Supabase Auth, guardas de rutas y cierre automático tras 30 minutos de inactividad. Login/logout de los tres roles aprobados; no se esperaron 30 minutos para un test temporizado.</td></tr>
+      <tr><td>RF03</td><td>Administrar usuarios, estados y roles.</td><td class="state pass">Implementado</td><td>Listado, selector de rol, activar/desactivar; las modificaciones personales se realizan en módulos de alumnos/profesores. La migración 009 impide editar la propia fila.</td></tr>
+      <tr><td>RF04</td><td>Alta, consulta, modificación y baja de alumnos.</td><td class="state pass">Implementado</td><td>Formulario, búsqueda, filtros, edición y baja lógica. CRUD completo desde interfaz requiere retest con alumno de prueba.</td></tr>
+      <tr><td>RF05</td><td>Alta, consulta, modificación y baja de profesores.</td><td class="state pass">Implementado</td><td>Vista Profesores y RPC administrativa. No se permite desactivar al docente con asignaciones vigentes; el comportamiento se debe retestar con datos aislados.</td></tr>
+      <tr><td>RF06</td><td>CRUD de cursos (año, división y turno).</td><td class="state pass">Implementado</td><td>Sección Cursos y restricción contra duplicados. La eliminación puede rechazarse si existen relaciones académicas.</td></tr>
+      <tr><td>RF07</td><td>CRUD de materias y asignación a profesores/cursos.</td><td class="state pass">Implementado</td><td>Materias y asignaciones editables; la asignación conserva curso/materia y permite editar docente/ciclo. No se eliminan referencias con historial.</td></tr>
+      <tr><td>RF08</td><td>Inscripción y cambio de curso conservando historial.</td><td class="state pass">Implementado</td><td>La nueva inscripción finaliza la anterior y conserva el historial. PI12 histórica pendiente; falta retest manual con alumno descartable.</td></tr>
+    </tbody></table>
+    <div class="footer"><span>ColegioGest · RF01–RF08</span><span>03</span></div>
+  </section>
+
+  <section class="page">
+    <div class="page-head"><div><div class="section">01 · Requerimientos funcionales</div><h2>Estado RF09–RF16</h2></div><div class="brand">COLEGIOGEST</div></div>
+    <table><colgroup><col style="width:9%"><col style="width:28%"><col style="width:20%"><col style="width:43%"></colgroup><thead><tr><th>Código</th><th>Requerimiento</th><th>Estado actual</th><th>Evidencia / dificultad / verificación pendiente</th></tr></thead><tbody>
+      <tr><td>RF09</td><td>Registrar y modificar asistencia por curso, materia y fecha.</td><td class="state pass">Implementado</td><td>Upsert por alumno/curso/materia/fecha; permite cuatro estados, búsqueda de alumnos y fecha no futura (migración 009). PI02/PI11 históricas aprobadas; retest posterior al hardening pendiente.</td></tr>
+      <tr><td>RF10</td><td>Cargar, modificar y consultar calificaciones.</td><td class="state pass">Implementado</td><td>CRUD con nota 1–10, instancia y fecha; validación de asignación y fecha no futura. PI03 histórica aprobada; verificar retest posterior a migración 009.</td></tr>
+      <tr><td>RF11</td><td>El alumno consulta sus propias notas y asistencias.</td><td class="state pass">Implementado</td><td>Mis calificaciones y Mis asistencias muestran datos propios, organizados por materia/fecha; sin edición. Aislamiento RLS PI10 histórico.</td></tr>
+      <tr><td>RF12</td><td>Crear, editar y eliminar actividades.</td><td class="state pass">Implementado</td><td>Vista Actividades con formulario de edición y eliminación. La edición del autor y la RLS requieren retest positivo/negativo.</td></tr>
+      <tr><td>RF13</td><td>Consultar actividades y entregas del curso.</td><td class="state pass">Implementado</td><td>Mis actividades, estados pendiente/entregada; PI05 histórica aprobada. “Marcar entregada” no carga archivos.</td></tr>
+      <tr><td>RF14</td><td>Publicar, editar y eliminar avisos por curso o institución.</td><td class="state pass">Implementado</td><td>Admin y profesor publican; profesor edita lo propio y admin gestiona. Edición y políticas RLS aún requieren pruebas manuales.</td></tr>
+      <tr><td>RF15</td><td>Consultar avisos destinados al alumno.</td><td class="state pass">Implementado</td><td>RLS filtra avisos de curso/institucionales; orden descendente. PI06 histórica y filtro UI12 aprobados.</td></tr>
+      <tr><td>RF16</td><td>Consultar datos, curso y materias; profesor ve cursos/alumnos asignados.</td><td class="state pass">Implementado</td><td>Perfil y Mis cursos. Verificar datos correctos para cuentas con y sin inscripción/asignación.</td></tr>
+    </tbody></table>
+    <div class="footer"><span>ColegioGest · RF09–RF16</span><span>04</span></div>
+  </section>
+
+  <section class="page">
+    <div class="page-head"><div><div class="section">01 · Requerimientos funcionales</div><h2>Estado RF17–RF23</h2></div><div class="brand">COLEGIOGEST</div></div>
+    <table><colgroup><col style="width:9%"><col style="width:28%"><col style="width:20%"><col style="width:43%"></colgroup><thead><tr><th>Código</th><th>Requerimiento</th><th>Estado actual</th><th>Evidencia / dificultad / verificación pendiente</th></tr></thead><tbody>
+      <tr><td>RF17</td><td>Menús y paneles diferenciados por rol.</td><td class="state pass">Implementado</td><td>Menú por rol, meta.roles en router y RLS. PI10/UI6 históricos; retest de rutas directas de los tres roles recomendado.</td></tr>
+      <tr><td>RF18</td><td>Búsqueda, filtros y paginación en listados.</td><td class="state pass">Implementado</td><td>Alumnos, profesores, calificaciones, asistencia y avisos. UI12 (fecha avisos) y UI13 (búsqueda alumno en asistencia) aprobadas. No todos los listados consultan por página en servidor.</td></tr>
+      <tr><td>RF19</td><td>Restablecer contraseña con enlace por correo.</td><td class="state partial">Implementado; config externa</td><td>Flujo de solicitud/reset existe. Redirect URL y proveedor SMTP deben configurarse y probarse con buzón de prueba.</td></tr>
+      <tr><td>RF20</td><td>Reportes/exportación PDF o Excel.</td><td class="state future">No incluido (V2)</td><td>Futuro. La exportación CSV del listado de alumnos no equivale a reportes académicos PDF/Excel.</td></tr>
+      <tr><td>RF21</td><td>Notificaciones por correo.</td><td class="state future">No incluido (V2)</td><td>Futuro; no es defecto de la versión inicial.</td></tr>
+      <tr><td>RF22</td><td>Boletín automático por período.</td><td class="state future">No incluido (V2)</td><td>Futuro; no es defecto de la versión inicial.</td></tr>
+      <tr><td>RF23</td><td>Rol y acceso para padres/tutores.</td><td class="state future">No incluido (V2)</td><td>Futuro; no es defecto de la versión inicial.</td></tr>
+    </tbody></table>
+    <div class="callout warn"><strong>Resumen:</strong> RF02–RF18 están implementados en la versión actual; RF01 y RF19 tienen límites de flujo/configuración; RF20–RF23 son V2. “Implementado” describe el código, no significa que cada CRUD se haya retesteado manualmente.</div>
+    <div class="footer"><span>ColegioGest · RF17–RF23</span><span>05</span></div>
+  </section>
+
+  <section class="page">
+    <div class="page-head"><div><div class="section">01 · Requerimientos no funcionales</div><h2>Estado RNF01–RNF10</h2></div><div class="brand">COLEGIOGEST</div></div>
+    <table><colgroup><col style="width:9%"><col style="width:27%"><col style="width:23%"><col style="width:41%"></colgroup><thead><tr><th>Código</th><th>Área</th><th>Estado</th><th>Evidencia y prueba todavía necesaria</th></tr></thead><tbody>
+      <tr><td>RNF01</td><td>Autenticación segura; sesiones caducan tras inactividad.</td><td class="state pass">Implementado; retest temporizado pendiente</td><td>Supabase Auth, rutas privadas y cierre de interfaz después de 30 minutos sin actividad. Falta prueba con tiempo controlado.</td></tr>
+      <tr><td>RNF02</td><td>Permisos por rol en base mediante RLS.</td><td class="state pass">Implementado; retest pendiente</td><td>RLS en 12 tablas; PI10/PI11 históricos. Migración 009 restringe actualizaciones propias; falta prueba conductual posterior.</td></tr>
+      <tr><td>RNF03</td><td>HTTPS y datos personales visibles solo a autorizados.</td><td class="state partial">Arquitectura implementada</td><td>Supabase remoto HTTPS + RLS. No se adjunta auditoría vigente de certificado/configuración de despliegue.</td></tr>
+      <tr><td>RNF04</td><td>Usabilidad, mensajes claros y confirmaciones.</td><td class="state partial">Implementado; usuario no evaluado</td><td>Mensajes en español y confirmaciones en operaciones destructivas; falta prueba con usuarios representativos.</td></tr>
+      <tr><td>RNF05</td><td>Paneles &lt;3 s y consultas &lt;2 s.</td><td class="state pending">Sin medición</td><td>Paginación disponible. No hay registro temporal con dataset/conexión representativos.</td></tr>
+      <tr><td>RNF06</td><td>Responsive, mínimo 360 px.</td><td class="state partial">Diseño adaptable; 360 px sin retest</td><td>Vistas móviles incluidas en el manual. Capturas tomadas en viewport móvil, no prueban específicamente 360 px.</td></tr>
+      <tr><td>RNF07</td><td>Accesibilidad, etiquetas, contraste y teclado.</td><td class="state partial">Implementado parcialmente; auditoría pendiente</td><td>FormField, etiquetas y nombres accesibles en controles. No hay auditoría Lighthouse/axe, teclado ni WCAG AA documentada.</td></tr>
+      <tr><td>RNF08</td><td>Chrome, Firefox, Edge y Safari actuales.</td><td class="state pending">Matriz no ejecutada</td><td>Solo se dispone de evidencia de navegador Chromium en la revisión.</td></tr>
+      <tr><td>RNF09</td><td>Backups e integridad relacional.</td><td class="state partial">Integridad implementada; restore no probado</td><td>FK, índices únicos, triggers y reglas verificadas por código/catálogo. Configuración/restore de backup depende de Supabase y no se probó.</td></tr>
+      <tr><td>RNF10</td><td>Componentes reutilizables y código documentado.</td><td class="state pass">Implementado</td><td>Vistas, componentes, servicios, mapeadores y stores separados; README/documentación; build aprobado. Revisión estática exhaustiva pendiente.</td></tr>
+    </tbody></table>
+    <div class="callout warn"><strong>No conformidad no demostrada:</strong> los requisitos medibles (tiempo, 360 px, WCAG, navegadores, restore) se dejan como pendientes de evidencia, no como fallidos.</div>
+    <div class="footer"><span>ColegioGest · Requerimientos no funcionales</span><span>06</span></div>
+  </section>
+
+  <section class="page">
+    <div class="page-head"><div><div class="section">02 · Plan de pruebas</div><h2>Pruebas funcionales y de integración</h2></div><div class="brand">COLEGIOGEST</div></div>
+    <p class="table-note">Diseño para ejecutar en un proyecto de pruebas, con cuentas descartables. “Datos” describe el set requerido; el resultado esperado es el criterio de aprobación.</p>
+    <table><colgroup><col style="width:7%"><col style="width:18%"><col style="width:16%"><col style="width:31%"><col style="width:28%"></colgroup><thead><tr><th>ID</th><th>Área / rol</th><th>Datos necesarios</th><th>Pasos resumidos</th><th>Resultado esperado</th></tr></thead><tbody>
+      <tr><td>P01</td><td>Autenticación / todos</td><td>Una cuenta válida por rol y contraseña errónea.</td><td>Probar login correcto/incorrecto, cierre, ruta privada tras logout y recuperación.</td><td>Panel correcto; credenciales inválidas rechazadas; ruta privada protegida. Recuperación solo si SMTP/Redirect URL están activos.</td></tr>
+      <tr><td>P02</td><td>Roles y RLS / todos</td><td>Alumno A, alumno B, docente con y sin asignación, administrador.</td><td>Consultar/escribir datos propios y ajenos por UI y API directa.</td><td>Solo los permisos definidos; alumno no ve ni modifica datos de otro.</td></tr>
+      <tr><td>P03</td><td>Usuarios/alumnos/profesores / admin</td><td>Personas TEST únicas, DNI/correo duplicados.</td><td>Alta, lectura, edición, baja/reactivación; probar campos inválidos y duplicados.</td><td>CRUD persiste; duplicados y datos inválidos se rechazan con mensaje claro; historial no se pierde.</td></tr>
+      <tr><td>P04</td><td>Cursos y materias / admin</td><td>Curso, materia y profesor de prueba.</td><td>Crear, editar y borrar; intentar eliminar elementos referenciados.</td><td>Datos persisten; duplicados e integridad referencial se respetan.</td></tr>
+      <tr><td>P05</td><td>Asignaciones / admin</td><td>Materia/curso/docente y ciclo.</td><td>Crear/editar docente y ciclo; intentar cambio con historial; eliminar sin historial.</td><td>Relación correcta; bloqueos explican dependencias; no quedan filas huérfanas.</td></tr>
+      <tr><td>P06</td><td>Inscripciones / admin</td><td>Alumno TEST y dos cursos.</td><td>Inscribir, cambiar de curso, repetir el mismo y revisar historial.</td><td>Una inscripción activa; anterior finalizada y conservada; no duplica el mismo vínculo.</td></tr>
+      <tr><td>P07</td><td>Asistencia / profesor</td><td>Asignación vigente, alumno inscrito y fechas pasada/actual/futura.</td><td>Registrar estados, editar mismo día, filtrar/buscar y probar curso ajeno/fecha futura.</td><td>Actualiza sin duplicar; solo curso asignado; rechaza fecha futura.</td></tr>
+    </tbody></table>
+    <div class="footer"><span>ColegioGest · Plan de pruebas</span><span>07</span></div>
+  </section>
+
+  <section class="page">
+    <div class="page-head"><div><div class="section">02 · Plan de pruebas</div><h2>Pruebas transversales y no funcionales</h2></div><div class="brand">COLEGIOGEST</div></div>
+    <table><colgroup><col style="width:7%"><col style="width:18%"><col style="width:16%"><col style="width:31%"><col style="width:28%"></colgroup><thead><tr><th>ID</th><th>Área / rol</th><th>Datos necesarios</th><th>Pasos resumidos</th><th>Resultado esperado</th></tr></thead><tbody>
+      <tr><td>P08</td><td>Calificaciones / profesor y alumno</td><td>Alumno inscrito, asignación docente y notas límite.</td><td>Crear, editar, borrar; intentar nota fuera de rango, fecha futura y edición del alumno.</td><td>Nota 1–10, asignación vigente, fecha válida; alumno consulta solo sus notas y no las cambia.</td></tr>
+      <tr><td>P09</td><td>Actividades / profesor y alumno</td><td>Actividad de curso A y alumnos A/B.</td><td>Crear, editar, borrar; consultar como A/B; marcar entregada.</td><td>Solo audiencia correcta; entrega cambia estado, sin duplicados. No se sube archivo.</td></tr>
+      <tr><td>P10</td><td>Avisos / profesor, admin, alumno</td><td>Aviso institucional y aviso del curso A.</td><td>Crear/editar/borrar; consultar desde cursos distintos; filtrar por texto, curso y fecha.</td><td>Audiencia y permisos correctos; edición solo autor/admin; orden reciente primero.</td></tr>
+      <tr><td>P11</td><td>Formularios / todos</td><td>Campos vacíos, formato inválido, duplicados y límites.</td><td>Probar formularios de login, personas, asistencia, notas, actividad y aviso.</td><td>Requeridos y formatos validados; mensajes entendibles; no se guarda información inválida.</td></tr>
+      <tr><td>P12</td><td>Búsqueda/paginación / todos</td><td>Dataset con más de una página y valores coincidentes/no coincidentes.</td><td>Combinar texto, filtros y fechas; cambiar página; limpiar filtros.</td><td>Resultados correctos, paginación no pierde filas y mensaje vacío apropiado.</td></tr>
+      <tr><td>P13</td><td>Responsive/accesibilidad / todos</td><td>Viewport 360, tablet, desktop y formularios.</td><td>Completar flujos con teclado; revisar foco, labels, contraste, zoom y desbordes.</td><td>Tareas posibles sin contenido cortado; foco/etiquetas visibles; registrar hallazgos WCAG.</td></tr>
+      <tr><td>P14</td><td>Rendimiento/navegadores/backup</td><td>Dataset representativo, cuatro navegadores y proyecto de pruebas.</td><td>Medir panel/búsquedas; repetir flujos; crear/restaurar backup aislado.</td><td>Panel &lt;3 s; búsqueda &lt;2 s; funcionamiento esencial y restauración confirmados.</td></tr>
+    </tbody></table>
+    <div class="callout danger"><strong>Protección de producción:</strong> P02–P10 incluyen escrituras y deben ejecutarse en un entorno separado o con datos descartables y limpieza autorizada. No reutilizar cuentas ni información real.</div>
+    <div class="footer"><span>ColegioGest · Plan de pruebas</span><span>08</span></div>
+  </section>
+
+  <section class="page">
+    <div class="page-head"><div><div class="section">03 · Casos de prueba</div><h2>Casos CT01–CT07</h2></div><div class="brand">COLEGIOGEST</div></div>
+    <p class="table-note">“Aprobada histórica” remite al registro citado y no significa que se haya repetido en esta elaboración. Las filas pendientes no tienen resultado inventado.</p>
+    <table><colgroup><col style="width:6%"><col style="width:13%"><col style="width:13%"><col style="width:19%"><col style="width:15%"><col style="width:25%"><col style="width:9%"></colgroup><thead><tr><th>Código</th><th>Funcionalidad</th><th>Condiciones previas</th><th>Pasos</th><th>Esperado</th><th>Obtenido / evidencia</th><th>Estado</th></tr></thead><tbody>
+      <tr><td>CT01</td><td>Instalación limpia/build</td><td>Node/npm y package-lock.</td><td>En copia limpia, ejecutar <span class="mono">npm ci</span> y <span class="mono">npm run build</span>.</td><td>Dependencias se instalan desde lockfile y build termina sin errores.</td><td>15/11/2026: 89 paquetes instalados, 0 vulnerabilidades reportadas; 2140 módulos compilados.</td><td class="state pass">Aprobada</td></tr>
+      <tr><td>CT02</td><td>Login/logout por rol</td><td>Cuentas demo admin, profesor y alumno.</td><td>Entrar con cada rol, comprobar menú, cerrar sesión.</td><td>Panel/menú según rol; logout vuelve a login.</td><td>15/11/2026: los tres roles iniciaron y cerraron sesión desde UI.</td><td class="state pass">Aprobada</td></tr>
+      <tr><td>CT03</td><td>Filtro de avisos por fecha</td><td>Dos o más avisos con fechas distintas.</td><td>Aplicar fecha 04/11/2026 en Avisos.</td><td>Solo avisos del día elegido.</td><td>UI12: apareció únicamente el aviso del 04/11/2026.</td><td class="state pass">Aprobada</td></tr>
+      <tr><td>CT04</td><td>Búsqueda en lista de asistencia</td><td>Profesor con alumnos en curso.</td><td>Buscar un alumno por nombre.</td><td>Lista queda solo con coincidencias.</td><td>UI13: buscar “Mateo” dejó una coincidencia; no se guardó asistencia.</td><td class="state pass">Aprobada</td></tr>
+      <tr><td>CT05</td><td>Asistencia autorizada</td><td>Asignación y alumno inscrito.</td><td>Docente registra asistencia y alumno consulta.</td><td>Registro propio se refleja; alumno ajeno no lo ve.</td><td>PI02 histórico: aprobada; consulta ajena devolvió 0 filas.</td><td class="state pass">Aprobada histórica</td></tr>
+      <tr><td>CT06</td><td>Asistencia no asignada</td><td>Profesor sin asignación del curso/materia.</td><td>Intentar registrar asistencia ajena.</td><td>Operación se rechaza.</td><td>PI11 histórico: rechazado por regla de asignación/inscripción.</td><td class="state pass">Aprobada histórica</td></tr>
+      <tr><td>CT07</td><td>Calificación y aislamiento</td><td>Asignación, inscripción y cuenta de alumno.</td><td>Profesor edita nota; alumno consulta e intenta editar.</td><td>Nota actual; alumno solo lectura.</td><td>PI03 histórico: nota editada y reflejada; edición del alumno rechazada.</td><td class="state pass">Aprobada histórica</td></tr>
+    </tbody></table>
+    <div class="footer"><span>ColegioGest · Casos de prueba</span><span>09</span></div>
+  </section>
+
+  <section class="page">
+    <div class="page-head"><div><div class="section">03 · Casos de prueba</div><h2>Casos CT08–CT14</h2></div><div class="brand">COLEGIOGEST</div></div>
+    <table><colgroup><col style="width:6%"><col style="width:13%"><col style="width:13%"><col style="width:19%"><col style="width:15%"><col style="width:25%"><col style="width:9%"></colgroup><thead><tr><th>Código</th><th>Funcionalidad</th><th>Condiciones previas</th><th>Pasos</th><th>Esperado</th><th>Obtenido / evidencia</th><th>Estado</th></tr></thead><tbody>
+      <tr><td>CT08</td><td>Asignación docente</td><td>Curso, materia y profesor disponibles.</td><td>Crear asignación; entrar como docente y abrir curso.</td><td>Asignación visible; docente puede operar en curso.</td><td>PI04 histórico: asignación visible y asistencia registrada.</td><td class="state pass">Aprobada histórica</td></tr>
+      <tr><td>CT09</td><td>Actividad y entrega</td><td>Actividad y alumnos de dos cursos.</td><td>Publicar, consultar por ambos cursos y marcar entrega.</td><td>Solo audiencia correspondiente; estado Entregada.</td><td>PI05 histórico: audiencia y entrega correctas.</td><td class="state pass">Aprobada histórica</td></tr>
+      <tr><td>CT10</td><td>Aviso por curso/institución</td><td>Alumnos de cursos distintos.</td><td>Publicar ambos tipos y consultar por rol.</td><td>Curso A ve el suyo; institucional llega a todos.</td><td>PI06 histórico: alcance correcto.</td><td class="state pass">Aprobada histórica</td></tr>
+      <tr><td>CT11</td><td>RLS entre alumnos</td><td>Alumno A y alumno B existentes.</td><td>Con A, consultar perfil/notas/asistencia de B vía API.</td><td>Consulta vacía o rechazada.</td><td>PI10 histórico: consultas ajenas devolvieron 0 filas.</td><td class="state pass">Aprobada histórica</td></tr>
+      <tr><td>CT12</td><td>Ruta restringida por rol</td><td>Sesión de alumno.</td><td>Abrir ruta de administración directamente.</td><td>Acceso denegado.</td><td>UI6 histórico: redirección a Sin permiso.</td><td class="state pass">Aprobada histórica</td></tr>
+      <tr><td>CT13</td><td>CRUD de alumnos por UI</td><td>Proyecto de pruebas y alumno descartable.</td><td>Alta, consulta, edición, baja; revisar historial y login.</td><td>Cambios persistidos; baja lógica conserva historial.</td><td>No ejecutado en esta revisión para no crear/modificar datos de producción.</td><td class="state pending">Pendiente</td></tr>
+      <tr><td>CT14</td><td>CRUD de profesores/guardas</td><td>Profesor descartable con/sin asignación vigente.</td><td>Alta, edición, baja/reactivación; probar guardas.</td><td>Alta válida; bloqueo mientras mantenga asignación vigente.</td><td>Migración 009 aplicada; funciones/permisos verificados en catálogo, comportamiento no ejercitado.</td><td class="state pending">Pendiente</td></tr>
+    </tbody></table>
+    <div class="footer"><span>ColegioGest · Casos de prueba</span><span>10</span></div>
+  </section>
+
+  <section class="page">
+    <div class="page-head"><div><div class="section">03 · Casos de prueba</div><h2>Casos CT15–CT25</h2></div><div class="brand">COLEGIOGEST</div></div>
+    <table><colgroup><col style="width:6%"><col style="width:13%"><col style="width:13%"><col style="width:19%"><col style="width:15%"><col style="width:25%"><col style="width:9%"></colgroup><thead><tr><th>Código</th><th>Funcionalidad</th><th>Condiciones previas</th><th>Pasos</th><th>Esperado</th><th>Obtenido / evidencia</th><th>Estado</th></tr></thead><tbody>
+      <tr><td>CT15</td><td>Cambio de curso</td><td>Alumno descartable y dos cursos.</td><td>Cambiar inscripción; consultar historial y lista por curso.</td><td>Anterior finalizada, nueva activa, historial preservado.</td><td>PI12 histórico pendiente; no se repitió en producción.</td><td class="state pending">Pendiente</td></tr>
+      <tr><td>CT16</td><td>Edición actividad/aviso</td><td>Contenido propio y contenido de otro autor.</td><td>Editar/borrar como autor, admin y otro profesor.</td><td>Autor/admin autorizados; ajeno rechazado.</td><td>Código implementado. No se realizó prueba de escritura posterior a la implementación.</td><td class="state pending">Pendiente</td></tr>
+      <tr><td>CT17</td><td>Actualizar perfil propio</td><td>Cuenta autenticada; fila del propio usuario.</td><td>Intentar cambiar nombre, DNI, correo, rol y estado.</td><td>Operación bloqueada.</td><td>RLS excluye fila propia; trigger protege campos. Catálogo verificado; no se intentó escribir.</td><td class="state pending">Pendiente</td></tr>
+      <tr><td>CT18</td><td>Desactivar docente asignado</td><td>Profesor con asignación vigente.</td><td>Usar Usuarios y roles para desactivar.</td><td>Bloqueo y mensaje; permitir tras reasignar/eliminar asignación.</td><td>RPC contiene la guarda y existe el error asociado; prueba conductual pendiente.</td><td class="state pending">Pendiente</td></tr>
+      <tr><td>CT19</td><td>Fechas futuras</td><td>Curso y asignación; fecha futura.</td><td>Intentar guardar asistencia/nota con fecha de mañana vía UI/API.</td><td>UI bloquea; trigger rechaza también la petición directa.</td><td>Máximo/UI y funciones trigger presentes; se inspeccionó catálogo, no se envió escritura.</td><td class="state pending">Pendiente</td></tr>
+      <tr><td>CT20</td><td>Recuperación por correo</td><td>Cuenta de prueba y SMTP/Redirect URL habilitados.</td><td>Solicitar recuperación, abrir enlace, asignar contraseña nueva.</td><td>Correo llega y la nueva credencial permite entrar.</td><td>Requiere configuración/buzón real; no ejecutado.</td><td class="state pending">Pendiente</td></tr>
+      <tr><td>CT21</td><td>Responsive/accesibilidad</td><td>Viewport 360, tablet, teclado y lectores/herramientas.</td><td>Completar tareas y auditar foco, labels y contraste.</td><td>Sin bloqueo/desbordes; accesibilidad medida.</td><td>Capturas móviles de manual; no prueban 360 px ni auditoría WCAG.</td><td class="state pending">Pendiente</td></tr>
+      <tr><td>CT22</td><td>Rendimiento/compatibilidad/backup</td><td>Dataset de prueba, Chrome/Firefox/Edge/Safari y backup aislado.</td><td>Medir panel/búsqueda, repetir tareas, restaurar backup.</td><td>&lt;3 s, &lt;2 s, compatibilidad y restore correctos.</td><td>No hay mediciones ni matriz/restore documentados.</td><td class="state pending">Pendiente</td></tr>
+      <tr><td>CT23</td><td>Validación alta administrador</td><td>Sesión administradora.</td><td>Abrir Usuarios y roles → Nuevo administrador; enviar formulario vacío.</td><td>Señala nombre, apellido, DNI, correo y contraseña obligatorios; no invoca alta.</td><td>15/11/2026: UI mostró validaciones; no se crearon datos.</td><td class="state pass">Aprobada</td></tr>
+      <tr><td>CT24</td><td>Alta y login de nuevo administrador</td><td>Proyecto de pruebas; datos únicos y contraseña temporal segura.</td><td>Crear cuenta; cerrar sesión; entrar con nueva cuenta y verificar rol.</td><td>Cuenta y perfil Auth/admin creados; panel de administrador accesible.</td><td>RPC desplegada; no se creó cuenta en producción.</td><td class="state pending">Pendiente</td></tr>
+      <tr><td>CT25</td><td>Expiración por inactividad</td><td>Sesión activa en navegador de prueba.</td><td>Simular último evento hace más de 30 min y volver a mostrar pestaña.</td><td>Sesión cerrada y redirección a login.</td><td>15/11/2026: tiempo de inactividad simulado; logout y aviso correctos. No se esperaron 30 minutos reales.</td><td class="state pass">Aprobada simulada</td></tr>
+    </tbody></table>
+    <div class="callout warn"><strong>Resultado global:</strong> no hay pruebas fallidas registradas en la evidencia consultada. Hay casos aprobados históricos y pruebas nuevas; los pendientes no se contabilizan como aprobados.</div>
+    <div class="footer"><span>ColegioGest · Casos de prueba</span><span>11</span></div>
+  </section>
+
+  <section class="page">
+    <div class="page-head"><div><div class="section">04 · Pruebas funcionales, CRUD e integridad</div><h2>Permisos y operaciones por entidad</h2></div><div class="brand">COLEGIOGEST</div></div>
+    <table><colgroup><col style="width:16%"><col style="width:17%"><col style="width:17%"><col style="width:17%"><col style="width:33%"></colgroup><thead><tr><th>Entidad / módulo</th><th>Crear</th><th>Leer</th><th>Actualizar / eliminar</th><th>Regla / verificación</th></tr></thead><tbody>
+      <tr><td>Usuarios</td><td>Admin crea cuentas por rol, incluida nueva cuenta admin (010).</td><td>Admin; usuario propio; acceso docente/alumno limitado por RLS.</td><td>Admin puede gestionar a otros; usuario no modifica su propia fila.</td><td>Migración 009 excluye self-update; migración 010 controla alta de admin. Verificación conductual de escrituras pendiente.</td></tr>
+      <tr><td>Alumnos</td><td>Admin</td><td>Admin; profesor de cursos asignados; alumno propio.</td><td>Admin edita y da baja lógica.</td><td>DNI/correo únicos; historial de inscripción preservado. CRUD UI completo pendiente.</td></tr>
+      <tr><td>Profesores</td><td>Admin</td><td>Admin; profesor propio según vistas.</td><td>Admin edita, activa/desactiva sujeto a asignaciones.</td><td>Bloqueo de baja con asignaciones vigentes; retest conductual pendiente.</td></tr>
+      <tr><td>Cursos/materias/asignaciones</td><td>Admin</td><td>Según rol, matrícula/asignación.</td><td>Admin; borrado sujeto a dependencias e historial.</td><td>Claves únicas y FK; PI04 histórico aprobó flujo de asignación.</td></tr>
+      <tr><td>Inscripciones</td><td>Admin</td><td>Admin; acceso académico limitado para profesor/alumno.</td><td>Admin finaliza o cambia curso conservando historial.</td><td>Una inscripción activa por alumno; PI12 de cambio de curso sigue pendiente.</td></tr>
+      <tr><td>Asistencias</td><td>Profesor asignado; admin según políticas.</td><td>Admin, docente autorizado y alumno propio.</td><td>Profesor autorizado actualiza con upsert; baja según política.</td><td>Clave única alumno/curso/materia/fecha, estados enum, asignación vigente y fecha no futura.</td></tr>
+      <tr><td>Calificaciones</td><td>Profesor asignado; admin.</td><td>Admin/docente autorizado; alumno solo propias.</td><td>Profesor autor/admin según política; alumno no edita.</td><td>Nota 1–10, inscripción y asignación vigentes, fecha no futura.</td></tr>
+      <tr><td>Actividades/entregas</td><td>Profesor asignado/admin; alumno marca entrega.</td><td>Audiencia de curso; profesor/admin con permisos.</td><td>Autor/admin gestionan actividad; entrega única por alumno/actividad.</td><td>PI05 histórico aprobado; retest de edición/RLS pendiente.</td></tr>
+      <tr><td>Avisos</td><td>Profesor/admin</td><td>Audiencia del curso o institución por RLS.</td><td>Autor/admin editan o eliminan.</td><td>PI06 histórico aprobado; edición RLS pendiente de prueba manual.</td></tr>
+    </tbody></table>
+    <h3>Reglas de negocio verificables en código/base</h3>
+    <div class="grid3">
+      <div class="info-card">DNI y correo únicos.</div><div class="info-card">Una inscripción activa por alumno; el historial se conserva.</div><div class="info-card">Notas entre 1 y 10 y ligadas a asignación vigente.</div>
+      <div class="info-card">Asistencia con estado válido y alumno del curso asignado.</div><div class="info-card">Una entrega por actividad/alumno; estado actualizado sin duplicar.</div><div class="info-card">No se permiten fechas futuras en notas/asistencia; migración 009.</div>
+      <div class="info-card">Profesor con asignaciones vigentes no se puede desactivar.</div><div class="info-card">RLS limita datos por rol; usuario no actualiza su propio perfil.</div><div class="info-card">Bajas lógicas conservan historial académico.</div>
+    </div>
+    <div class="footer"><span>ColegioGest · CRUD, reglas e integridad</span><span>12</span></div>
+  </section>
+
+  <section class="page">
+    <div class="page-head"><div><div class="section">05 · Resultados no funcionales</div><h2>Responsive, accesibilidad y rendimiento</h2></div><div class="brand">COLEGIOGEST</div></div>
+    <div class="split">
+      <div>
+        <h3>Navegación y usabilidad</h3>
+        <p>La aplicación presenta menús por rol, etiquetas en formularios, estados de carga, mensajes en español y confirmaciones en operaciones destructivas. Se comprobaron rutas y pantallas principales con cuentas de demostración; no se realizó un estudio formal con usuarios.</p>
+        <h3>Responsive</h3>
+        <p>El CSS incorpora ajustes para móvil y el manual incluye capturas móviles. El viewport usado en las capturas no acredita específicamente el ancho mínimo de 360 px ni todos los flujos en tablet/escritorio. Marcar como pendiente hasta completar esa matriz.</p>
+        <h3>Accesibilidad</h3>
+        <p>Se observan etiquetas y nombres accesibles en controles principales. No se ejecutó auditoría Lighthouse/axe ni recorrido completo solo con teclado/lector; no se declara WCAG AA cumplido.</p>
+      </div>
+      <div>
+        <h3>Rendimiento</h3>
+        <ul><li>RNF05 pide paneles &lt;3 s y consultas/búsquedas &lt;2 s.</li><li>No se midió con dataset representativo ni conexión registrada.</li><li>Hay paginación; algunos listados usan paginación del lado del cliente.</li></ul>
+        <h3>Compatibilidad</h3>
+        <p>Hay evidencia en Chromium. No se documentó una matriz para Chrome, Firefox, Edge y Safari.</p>
+        <h3>Backup e integridad</h3>
+        <p>Relaciones, índices, políticas, funciones y triggers están presentes. No se realizó una restauración de backup ni se verificó el plan de respaldo del proyecto.</p>
+      </div>
+    </div>
+    <h3>Errores registrados y prioridad</h3>
+    <table><colgroup><col style="width:6%"><col style="width:27%"><col style="width:13%"><col style="width:38%"><col style="width:16%"></colgroup><thead><tr><th>ID</th><th>Hallazgo</th><th>Importancia</th><th>Corrección aplicada / evidencia</th><th>Retest</th></tr></thead><tbody>
+      <tr><td>ER01</td><td>Usuario podía actualizar datos personales propios.</td><td class="risk">Alta</td><td>Migración 009 restringe `usuarios_update` a admin excluyendo la propia fila; trigger protege nombre/DNI/correo y rol/estado.</td><td>Catálogo verificado; rechazo funcional pendiente.</td></tr>
+      <tr><td>ER02</td><td>Desactivación general no comprobaba asignaciones docentes vigentes.</td><td class="risk">Alta</td><td>RPC `admin_cambiar_estado_usuario` bloquea desactivación y devuelve `PROFESOR_CON_ASIGNACIONES`.</td><td>Definición verificada; pruebas con/sin asignación pendientes.</td></tr>
+      <tr><td>ER03</td><td>RPC de alta aceptaban `demo123` por defecto.</td><td class="risk">Alta</td><td>Wrappers públicos sin valores predeterminados; funciones internas revocadas a roles API; formulario docente exige contraseña.</td><td>Aridad y permisos verificados; alta negativa pendiente.</td></tr>
+      <tr><td>ER04</td><td>Fechas futuras no estaban bloqueadas por la BD.</td><td class="partial">Media</td><td>UI limita fecha y triggers de notas/asistencia rechazan futuras según zona horaria Argentina.</td><td>Definición verificada; intento de guardado futuro pendiente.</td></tr>
+      <tr><td>ER05</td><td>Advertencia Vue en tipo de prop icon de StatCard.</td><td class="partial">Baja</td><td>Prop acepta Object/Function; build posterior aprobado.</td><td>Build aprobado; revisión runtime completa pendiente.</td></tr>
+    </tbody></table>
+    <div class="footer"><span>ColegioGest · Resultados y hallazgos</span><span>13</span></div>
+  </section>
+
+  <section class="page">
+    <div class="page-head"><div><div class="section">06 · Correcciones y documentación</div><h2>Retest, código y entregables</h2></div><div class="brand">COLEGIOGEST</div></div>
+    <div class="split">
+      <div>
+        <h3>Repetición de pruebas</h3>
+        <p>Las migraciones 009 y 010 están desplegadas y registradas; se verificaron de solo lectura políticas, funciones, aridad y permisos. No se ejecutaron altas/escrituras académicas en producción. El retest recomendado debe hacerse en una base aislada con datos sintéticos:</p>
+        <ol class="tight"><li>Usuario intenta cambiar su propio nombre/DNI/correo/rol/estado: todas las escrituras deben rechazarse.</li><li>Admin desactiva profesor con asignación vigente: se bloquea; sin asignaciones: puede continuar.</li><li>Alta sin contraseña o con menos de seis caracteres: falla; contraseña válida: alta autorizada.</li><li>Asistencia/nota de mañana por UI y API: rechazo; fecha actual/pasada válida.</li><li>Repetir login, RLS, CRUD e integración para asegurar que no hubo regresión.</li></ol>
+        <h3>Organización y calidad</h3>
+        <p>La estructura separa vistas, componentes reutilizables, servicios de Supabase, mapeadores, router y stores. Se corrigió un tipo de prop de icono en `StatCard.vue`; `npm run build` pasó. No se ejecutó un análisis estático exhaustivo ni se hicieron refactors adicionales.</p>
+      </div>
+      <div>
+        <h3>Documentación disponible</h3>
+        <ul class="tight"><li><span class="mono">README.md</span>: instalación, configuración y ejecución.</li><li><span class="mono">docs/ETAPA6.md</span>: documentación técnica, estructura y modelo.</li><li><span class="mono">docs/ANALISIS_DATOS_ETAPA3.md</span>: análisis del modelo.</li><li><span class="mono">docs/PRUEBAS_ETAPA6.md</span>: evidencia histórica y pruebas complementarias.</li><li><span class="mono">docs/ETAPA6_COMPLETADO.md</span>: funcionalidades y migraciones.</li><li><span class="mono">docs/MANUAL_USUARIO_ColegioGest.pdf</span>: manual por rol con capturas.</li></ul>
+        <p class="small">También se prepararon `docs/ETAPA_FINAL.md` (guion de defensa) y `docs/PRESENTACION_ColegioGest.pdf` (diapositivas).</p>
+        <div class="callout">El manual explica inicio/cierre de sesión, administración, asistencia, notas, actividades, avisos y limitaciones de entrega de tareas.</div>
+      </div>
+    </div>
+    <h3>Limitaciones y acciones pendientes</h3>
+    <div class="grid3">
+      <div class="info-card"><strong>Pruebas CRUD/RLS post-009</strong><br>Requieren entorno aislado y cuentas descartables.</div>
+      <div class="info-card"><strong>Correo de recuperación</strong><br>Configurar Redirect URL/SMTP y probar con buzón de prueba.</div>
+      <div class="info-card"><strong>RNF medibles</strong><br>Registrar rendimiento, 360 px, accesibilidad y cuatro navegadores.</div>
+    </div>
+    <div class="callout warn"><strong>Fuera de V1:</strong> RF20 reportes PDF/Excel, RF21 notificaciones por correo, RF22 boletín automático y RF23 tutor. “Marcar entregada” no carga archivos.</div>
+    <div class="footer"><span>ColegioGest · Retest y conclusión</span><span>14</span></div>
+  </section>
+
+  <section class="page">
+    <div class="page-head"><div><div class="section">07 · Conclusión</div><h2>Estado final de la versión</h2></div><div class="brand">COLEGIOGEST</div></div>
+    <p class="lede">ColegioGest dispone de los módulos principales para gestión escolar, trabajo docente y consulta de alumnos. La base, las migraciones 001–010 y RLS están instaladas; los flujos históricos de integración y las pruebas de UI documentadas aportan evidencia útil.</p>
+    <div class="split">
+      <div>
+        <h3>Comprobado con evidencia</h3>
+        <ul><li>Build de producción aprobado.</li><li>Login/logout de los tres roles y guardas de rutas.</li><li>Pruebas históricas de asistencia, calificaciones, asignaciones, actividades, avisos y aislamiento entre alumnos.</li><li>Filtro de avisos por fecha, búsqueda de alumno en asistencia y formulario de alta de administrador con validación vacía.</li><li>Migraciones 009–010 aplicadas; permisos y funciones principales inspeccionados tras el despliegue.</li></ul>
+      </div>
+      <div>
+        <h3>Pendiente para declarar validación completa</h3>
+        <ul><li>CRUD manual completo con datos de prueba.</li><li>Retest de denegaciones y fechas futuras tras hardening.</li><li>Mediciones RNF05, matriz de navegadores, responsive 360 px y auditoría de accesibilidad.</li><li>Prueba real de correo de recuperación y backup/restore.</li></ul>
+      </div>
+    </div>
+    <div class="callout good"><strong>Conclusión:</strong> implementación funcional y compilable, con evidencia histórica aprobada y hardening de seguridad desplegado. La versión no debe describirse como completamente validada hasta ejecutar los casos pendientes en un entorno aislado y registrar sus resultados.</div>
+    <p class="small">Elaborado para la consigna de Etapa 8 · ColegioGest · 15 de noviembre de 2026. Fuente editable: `docs/INFORME_PRUEBAS_ETAPA8.html`.</p>
+    <div class="footer"><span>ColegioGest · Informe de pruebas Etapa 8</span><span>15</span></div>
+  </section>
+</body>
+</html>

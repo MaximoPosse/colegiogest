@@ -20,10 +20,10 @@ Se completaron nueve tareas sobre la implementación existente, todo con el patr
 
 Además:
 
-- `supabase/setup_completo.sql` se regeneró para incluir las migraciones 007 y 008 antes del seed. Si el proyecto ya tiene 001–006 y el seed aplicados, alcanza con ejecutar las dos migraciones nuevas directamente en el SQL Editor.
+- `supabase/setup_completo.sql` se mantiene como script de puesta en marcha completo, con las migraciones 001–010 antes del seed. Para el proyecto remoto ya existente no volver a ejecutar el script completo.
 - `supabase/dev/limpiar_datos_test.sql` es un script de limpieza para pruebas (ver sección 6).
 
-> **Estado remoto (2026-11-15):** migraciones 007 y 008 aplicadas en el proyecto Supabase Colegiogest. Las ocho migraciones quedaron registradas en el historial remoto.
+> **Estado remoto (2026-11-15):** migraciones 001–010 aplicadas y registradas en el proyecto Supabase Colegiogest.
 
 ## 3. Cambios por tarea
 
@@ -93,7 +93,7 @@ Además:
 
 ## 5. Pasos de prueba manual por rol
 
-Asumir migraciones 007/008 aplicadas y el seed cargado. Contraseña de las cuentas del seed: `demo123`.
+Asumir migraciones 001–010 aplicadas y el seed cargado. Contraseña de las cuentas de demostración del seed: `demo123`.
 
 ### Administrador (admin@colegiogest.edu.ar)
 
@@ -137,3 +137,10 @@ La migración `supabase/migrations/20261115000100_security_hardening.sql` incorp
 - La base rechaza insertar o modificar asistencias y calificaciones con fecha futura.
 
 La aplicación y el script `supabase/setup_completo.sql` incluyen estos cambios. La migración 009 se aplicó al proyecto Supabase Colegiogest y quedó registrada en el historial. Se verificaron la política `usuarios_update`, los permisos y la aridad de las RPC públicas, el bloqueo de bajas con asignaciones y las validaciones de fecha en la base. No se modificaron datos escolares; quedan pruebas negativas de comportamiento para un entorno de pruebas aislado.
+
+## 8. Cierre de requerimientos de acceso · aplicado el 2026-11-15
+
+- `src/components/catalog/UsersSection.vue` permite al administrador crear otra cuenta administradora con nombre, apellido, DNI, correo y contraseña obligatoria.
+- `supabase/migrations/20261115000200_admin_account_creation.sql` crea la RPC protegida `admin_crear_administrador`; la migración 010 está aplicada y registrada en Supabase.
+- `src/App.vue` cierra la sesión y redirige al login tras 30 minutos sin actividad.
+- La validación de campos vacíos/incorrectos del nuevo formulario se revisó en navegador; no se creó una cuenta real durante esta revisión.

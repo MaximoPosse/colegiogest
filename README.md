@@ -22,13 +22,14 @@ La Etapa 6 incorporó la base de datos real, autenticación, RLS y la conexión 
 ## Puesta en marcha
 
 ```bash
-npm install
+npm ci
 cp .env.example .env
 # completar VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY en .env
 npm run dev
 ```
 
 La aplicación queda disponible en `http://localhost:5173`.
+En PowerShell, para copiar el ejemplo de configuración, ejecutá `Copy-Item .env.example .env`.
 
 ### Variables de entorno
 
@@ -56,7 +57,7 @@ psql "<connection-string>" -f supabase/seed.sql
 **Manualmente** desde el Dashboard (opción rápida):
 
 1. Abrir **SQL Editor**.
-2. Copiar todo el contenido de `supabase/setup_completo.sql` y ejecutarlo una sola vez. Ese archivo contiene, en orden, las nueve migraciones y el seed.
+2. Copiar todo el contenido de `supabase/setup_completo.sql` y ejecutarlo una sola vez. Ese archivo contiene, en orden, las diez migraciones y el seed.
 3. Esperar el mensaje `Seed de ColegioGest cargado correctamente.`.
 
 **Manualmente** por archivos:
@@ -69,9 +70,10 @@ psql "<connection-string>" -f supabase/seed.sql
    - `20261106000400_rls_policies.sql`
    - `20261106000500_views.sql`
    - `20261106000600_fix_v_avisos.sql`
-    - `20261110000100_admin_profesores_roles.sql`
-    - `20261110000200_materias_asignaciones.sql`
-    - `20261115000100_security_hardening.sql`
+   - `20261110000100_admin_profesores_roles.sql`
+   - `20261110000200_materias_asignaciones.sql`
+   - `20261115000100_security_hardening.sql`
+   - `20261115000200_admin_account_creation.sql`
 3. Ejecutar `supabase/seed.sql`.
 
 ### 2. Configurar Auth
@@ -110,6 +112,7 @@ Todas las cuentas del seed usan la contraseña **`demo123`**.
 
 - Panel con métricas generales.
 - Alta, edición, baja lógica y exportación CSV de alumnos.
+- Alta directa de administradores con credenciales requeridas (migración 010 aplicada en Supabase).
 - Alta, edición y baja de profesores (RF05), con cuenta de Auth incluida.
 - Cambio de rol de usuarios: alumno ⇄ profesor ⇄ administrador, sin perder el historial.
 - Activación/desactivación de cuentas.
@@ -141,6 +144,7 @@ Todas las cuentas del seed usan la contraseña **`demo123`**.
 - **Supabase Auth** para inicio de sesión y recuperación de contraseña.
 - El perfil y el rol se leen de `public.usuarios`; nunca se confía en datos del cliente.
 - Las cuentas con `estado = 'inactivo'` no pueden operar: la app cierra la sesión y RLS bloquea las consultas.
+- La sesión se cierra tras 30 minutos sin actividad en la aplicación.
 - **Row Level Security** en las 12 tablas.
 - Los docentes solo acceden a sus asignaciones.
 - Los alumnos solo acceden a sus propios datos y a los de su curso.
@@ -180,20 +184,29 @@ docs/
   ETAPA6.md
   PRUEBAS_ETAPA6.md
   ETAPA6_COMPLETADO.md
+  MANUAL_USUARIO.html             fuente editable del manual
+  MANUAL_USUARIO_ColegioGest.pdf  manual listo para compartir
+  INFORME_PRUEBAS_ETAPA8.html    fuente editable del informe de Etapa 8
+  INFORME_PRUEBAS_ETAPA8_ColegioGest.pdf informe final de pruebas
+  PRESENTACION_ColegioGest.html  presentación navegable con flechas
+  PRESENTACION_ColegioGest.pdf  presentación en diapositivas
+  ETAPA_FINAL.md                 guía técnica y de defensa oral
+  capturas-manual/                capturas usadas por el manual
 ```
 
-## Documentación
-
-- [Análisis de datos de la Etapa 3](docs/ANALISIS_DATOS_ETAPA3.md)
-- [Documentación técnica de la Etapa 6](docs/ETAPA6.md)
-- [Pruebas de la Etapa 6](docs/PRUEBAS_ETAPA6.md)
-
-## Documentación
+## Documentación y entrega
 
 - [Análisis de datos de la Etapa 3](docs/ANALISIS_DATOS_ETAPA3.md)
 - [Documentación técnica de la Etapa 6](docs/ETAPA6.md)
 - [Pruebas de la Etapa 6](docs/PRUEBAS_ETAPA6.md)
 - [Cambios de la etapa de completado](docs/ETAPA6_COMPLETADO.md)
+- [Manual de usuario (PDF)](docs/MANUAL_USUARIO_ColegioGest.pdf)
+- [Fuente editable del manual (HTML)](docs/MANUAL_USUARIO.html)
+- [Informe de pruebas Etapa 8 (PDF)](docs/INFORME_PRUEBAS_ETAPA8_ColegioGest.pdf)
+- [Fuente editable del informe (HTML)](docs/INFORME_PRUEBAS_ETAPA8.html)
+- [Presentación final (PDF)](docs/PRESENTACION_ColegioGest.pdf)
+- [Presentación interactiva editable (HTML)](docs/PRESENTACION_ColegioGest.html)
+- [Guía técnica y de defensa](docs/ETAPA_FINAL.md)
 
 ## Estado
 
@@ -212,8 +225,11 @@ docs/
 | Paginación y filtros de listados (RF18/RNF05) | ✅ Implementado |
 | Hardening de permisos, altas y fechas futuras | ✅ Migración 009 aplicada en Supabase el 2026-11-15 |
 | Build de producción | ✅ Verificado |
+| Instalación limpia (`npm ci`) y build | ✅ Verificados en copia temporal |
 | Migraciones 001–006 y seed en el proyecto remoto | ✅ Aplicados el 2026-11-07 |
-| Migraciones 001–009 e historial remoto | ✅ Aplicadas y registradas en Supabase el 2026-11-15 |
+| Migraciones 001–010 e historial remoto | ✅ Aplicadas y registradas en Supabase el 2026-11-15 |
+| Alta directa de administradores (migración 010) | ✅ Implementada y aplicada en Supabase |
+| Cierre automático por inactividad | ✅ 30 minutos sin actividad |
 | Pruebas de login, RLS y escritura por API | ✅ Ejecutadas |
 | Flujos principales de UI (login, avisos, notas, asistencia, actividades y guardas) | ✅ Verificados en navegador |
 | Alta/edición de alumnos, profesores, cambio de rol y cambio de curso | ⏳ Pendientes de recorrido manual (ver `docs/ETAPA6_COMPLETADO.md`) |

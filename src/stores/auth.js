@@ -170,12 +170,22 @@ export async function signIn(email, password) {
     password,
   })
   if (error) throw error
-  return loadProfile(data.user.id)
+  localStorage.setItem('colegiogest:lastActivityAt', String(Date.now()))
+  try {
+    return await loadProfile(data.user.id)
+  } catch (caught) {
+    localStorage.removeItem('colegiogest:lastActivityAt')
+    throw caught
+  }
 }
 
 export async function signOut() {
-  if (supabase) await supabase.auth.signOut()
-  clearSession()
+  try {
+    if (supabase) await supabase.auth.signOut()
+  } finally {
+    localStorage.removeItem('colegiogest:lastActivityAt')
+    clearSession()
+  }
 }
 
 export async function recoverPassword(email) {

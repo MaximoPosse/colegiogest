@@ -2,7 +2,7 @@
 
 Documentación técnica de la implementación de Supabase/PostgreSQL en ColegioGest.
 
-> **Actualización:** la etapa de completado agregó gestión de profesores, cambio de rol, edición de materias/asignaciones/actividades/avisos, Mis asistencias y paginación. Ver [`docs/ETAPA6_COMPLETADO.md`](./ETAPA6_COMPLETADO.md). Este documento describe la implementación original de la Etapa 6 y mantiene su vigencia para lo no modificado.
+> **Actualización final:** las migraciones 009 y 010 endurecen perfiles/bajas/fechas y habilitan alta directa de administradores. Las diez migraciones están aplicadas y registradas en Supabase. Este documento conserva el detalle original y las secciones siguientes indican el estado vigente.
 
 ## 1. Resumen
 
@@ -73,6 +73,7 @@ VITE_SUPABASE_ANON_KEY=<publishable-o-anon-key>
 7. `signIn` usa `signInWithPassword`; el correo se normaliza a minúsculas.
 8. `recoverPassword` usa `resetPasswordForEmail` con `redirectTo = ${origin}/restablecer`.
 9. `updatePassword` usa `auth.updateUser({ password })` en la pantalla `/restablecer`.
+10. La interfaz cierra la sesión tras 30 minutos sin actividad y redirige a `/login`.
 
 ### Flujo de recuperación de contraseña
 
@@ -88,7 +89,7 @@ VITE_SUPABASE_ANON_KEY=<publishable-o-anon-key>
 
 | Rol | Rutas principales | Alcance |
 | --- | --- | --- |
-| `administrador` | `/app`, `/app/alumnos`, `/app/usuarios`, `/app/cursos`, `/app/inscripciones`, `/app/calificaciones`, `/app/actividades`, `/app/avisos`, `/app/perfil` | Gestión general. |
+| `administrador` | `/app`, `/app/alumnos`, `/app/profesores`, `/app/usuarios`, `/app/cursos`, `/app/inscripciones`, `/app/calificaciones`, `/app/actividades`, `/app/avisos`, `/app/perfil` | Gestión general. |
 | `profesor` | `/app`, `/app/mis-cursos`, `/app/asistencia`, `/app/calificaciones`, `/app/actividades`, `/app/avisos`, `/app/perfil` | Solo cursos, materias y alumnos de sus asignaciones. |
 | `alumno` | `/app`, `/app/mis-cursos`, `/app/mis-calificaciones`, `/app/mis-actividades`, `/app/avisos`, `/app/perfil` | Solo su propia información y la de su curso. |
 
@@ -106,13 +107,17 @@ Ubicación: `supabase/migrations/`. Se aplican en orden por nombre de archivo.
 | `20261106000400_rls_policies.sql` | RLS y políticas de `SELECT`, `INSERT`, `UPDATE`, `DELETE` por tabla. |
 | `20261106000500_views.sql` | Vistas `v_*` con `security_invoker = true` y permisos para `authenticated`. |
 | `20261106000600_fix_v_avisos.sql` | Corrige `v_avisos` para que los avisos institucionales no desaparezcan cuando el autor no es visible por RLS. Agrega `nombre_usuario(uuid)`. |
+| `20261110000100_admin_profesores_roles.sql` | Alta/edición/baja de profesores y cambio de rol. |
+| `20261110000200_materias_asignaciones.sql` | CRUD de materias y edición/eliminación segura de asignaciones. |
+| `20261115000100_security_hardening.sql` | Actualización segura de perfiles, baja docente con asignaciones, altas sin contraseñas predeterminadas y bloqueo de fechas futuras. Aplicada en producción. |
+| `20261115000200_admin_account_creation.sql` | Alta directa de usuarios con rol administrador. Preparada; despliegue remoto pendiente. |
 | `supabase/seed.sql` | Datos ficticios y 13 cuentas de prueba (contraseña `demo123`). |
 
 ### Aplicación manual (sin Supabase CLI)
 
 1. Crear o abrir el proyecto en <https://supabase.com/dashboard>.
 2. Ir a **SQL Editor**.
-3. Ejecutar `supabase/setup_completo.sql`, que ya concatena en orden las cinco migraciones y el seed.
+3. Ejecutar `supabase/setup_completo.sql`, que concatena en orden las diez migraciones y el seed.
    - Alternativa: ejecutar uno por uno los archivos de `supabase/migrations/` y después `supabase/seed.sql`.
 4. Verificar en **Table Editor** que existan las tablas y en **Authentication → Users** las cuentas.
 5. Iniciar sesión con `admin@colegiogest.edu.ar` / `demo123`.
@@ -154,7 +159,7 @@ Enumeraciones:
 
 | Tabla | SELECT | INSERT | UPDATE | DELETE |
 | --- | --- | --- | --- | --- |
-| `usuarios` | Propia fila (aun inactiva) o admin; docente ve usuarios de sus alumnos; alumno ve docentes que le dictan. | Admin. | Admin, o el propio usuario con restricción de rol/estado por trigger. | Admin. |
+| `usuarios` | Propia fila (aun inactiva) o admin; docente ve usuarios de sus alumnos; alumno ve docentes que le dictan. | Admin. | Admin sobre otros usuarios; la propia fila no se puede actualizar (migración 009). | Admin. |
 | `alumnos` | Admin, el propio alumno, o docente con acceso al alumno. | Admin. | Admin. | Admin. |
 | `profesores` | Admin, el propio docente, o alumno que curse con él. | Admin. | Admin. | Admin. |
 | `cursos` | Admin, docente asignado, o alumno en su curso activo. | Admin. | Admin. | Admin. |
@@ -172,10 +177,10 @@ Enumeraciones:
 | Trigger | Función | Efecto |
 | --- | --- | --- |
 | `on_auth_user_created` | `handle_new_user()` | Crea `usuarios` y el perfil `alumnos`/`profesores` al crear una cuenta en Auth. |
-| `proteger_campos_usuario_trg` | `proteger_campos_usuario()` | Impide que un no administrador cambie su propio `rol` o `estado`. |
+| `proteger_campos_usuario_trg` | `proteger_campos_usuario()` | Bloquea que una cuenta actualice su propia fila y protege campos personales, rol y estado. |
 | `set_*_updated_at` | `set_updated_at()` | Actualiza `updated_at` en cada modificación. |
-| `validar_calificacion_trg` | `validar_calificacion()` | Exige inscripción activa y asignación vigente. |
-| `validar_asistencia_trg` | `validar_asistencia()` | Exige inscripción activa y asignación vigente. |
+| `validar_calificacion_trg` | `validar_calificacion()` | Exige inscripción activa, asignación vigente y fecha no futura. |
+| `validar_asistencia_trg` | `validar_asistencia()` | Exige inscripción activa, asignación vigente y fecha no futura. |
 | `validar_actividad_trg` | `validar_actividad()` | Exige asignación vigente del docente. |
 | `validar_entrega_trg` | `validar_entrega()` | Exige que el alumno esté inscripto en el curso de la actividad. |
 | `validar_inscripcion_trg` | `validar_inscripcion()` | Impide inscribir alumnos inactivos. |
@@ -187,12 +192,18 @@ Todas son `SECURITY DEFINER`, validan que el llamador sea administrador (o el ca
 | RPC | Firma resumida | Uso |
 | --- | --- | --- |
 | `admin_crear_alumno` | `(nombre, apellido, dni, correo, id_curso, password, fecha_nacimiento, telefono)` | Crea `auth.users`, identidad, `usuarios`, `alumnos` e inscripción. |
+| `admin_crear_administrador` | `(nombre, apellido, dni, correo, password)` | Crea una cuenta administradora; RPC añadida por la migración 010, aplicada en Supabase. |
+| `admin_crear_profesor` | `(nombre, apellido, dni, correo, password)` | Crea cuenta Auth y perfil docente con contraseña indicada explícitamente. |
 | `admin_actualizar_alumno` | `(alumno_id, nombre, apellido, dni, correo, estado, id_curso, fecha_nacimiento, telefono)` | Actualiza datos, correo de Auth, estado y cambia la inscripción si corresponde. |
 | `admin_baja_alumno` | `(alumno_id)` | Baja lógica: usuario y alumno inactivos, inscripción finalizada. |
-| `admin_cambiar_estado_usuario` | `(usuario_id, estado)` | Activa o desactiva cualquier cuenta; no permite auto-desactivarse. |
+| `admin_cambiar_estado_usuario` | `(usuario_id, estado)` | Activa/desactiva cuentas, no permite auto-desactivarse ni baja docente con asignaciones vigentes. |
+| `admin_cambiar_rol_usuario` | `(usuario_id, rol)` | Cambia rol y sincroniza perfiles académicos, conservando historial. |
+| `admin_actualizar_profesor` / `admin_baja_profesor` | `(profesor_id, ...)` | Edita o da de baja docente; bloquea baja si mantiene asignaciones vigentes. |
 | `admin_inscribir_alumno` | `(alumno_id, curso_id)` | Finaliza la inscripción activa anterior y crea la nueva. |
 | `admin_crear_asignacion` | `(materia_nombre, curso_id, profesor_id, anio_lectivo, descripcion)` | Crea la materia si no existe y su asignación docente. |
 | `admin_eliminar_asignacion` | `(asignacion_id)` | Elimina solo si no hay calificaciones, asistencias ni actividades asociadas. |
+| `admin_crear_materia` / `admin_actualizar_materia` / `admin_eliminar_materia` | `(materia_id, ...)` | CRUD del catálogo, con restricción por historial. |
+| `admin_actualizar_asignacion` | `(asignacion_id, profesor_id, anio_lectivo)` | Actualiza asignación respetando historial y unicidad. |
 
 Helpers de RLS: `rol_actual`, `cuenta_activa`, `es_admin`, `es_profesor`, `es_alumno`, `mi_alumno_id`, `mi_profesor_id`, `mi_curso_id`, `curso_de_alumno`, `profesor_dicta`, `profesor_puede_ver_curso`, `profesor_puede_ver_alumno`, `profesor_puede_ver_usuario`, `alumno_puede_ver_profesor`, `alumno_puede_ver_materia`, `profesor_puede_ver_materia`, `profesor_es_autor_actividad`, `contar_alumnos_curso`, `nombre_usuario`.
 
@@ -224,14 +235,16 @@ Todas son `security_invoker = true`: respetan RLS y no elevan privilegios.
 | Dashboard `/app` | Lectura de estadísticas, avisos, actividades y agenda según rol. |
 | Alumnos `/app/alumnos` | Listado, búsqueda, filtro por curso, paginación, exportación CSV y baja lógica. |
 | Nuevo/editar alumno | Alta con cuenta de Auth y contraseña inicial; edición de datos, estado y curso; validación de DNI/correo duplicados. |
-| Usuarios `/app/usuarios` | Listado y activación/desactivación de cuentas. |
-| Cursos `/app/cursos` | Alta, edición y eliminación de cursos; alta y eliminación de asignaciones docente-materia-curso. |
+| Usuarios `/app/usuarios` | Listado, cambio de rol y activación/desactivación; alta directa de administrador con migración 010. |
+| Profesores `/app/profesores` | Alta, edición y baja lógica/reactivación con cuenta Auth. |
+| Cursos `/app/cursos` | CRUD de cursos y materias; creación, edición y eliminación segura de asignaciones docente-materia-curso. |
 | Inscripciones `/app/inscripciones` | Alta de inscripción (finaliza la anterior) y finalización manual. |
 | Asistencia `/app/asistencia` | Selección de curso/materia/fecha, carga por alumno y *upsert* por alumno-curso-materia-fecha. |
 | Calificaciones `/app/calificaciones` | Listado, alta, edición en línea y eliminación. |
-| Actividades `/app/actividades` | Listado, publicación y eliminación por docente; alumnos marcan “entregada”. |
-| Avisos `/app/avisos` | Listado, filtro por categoría, publicación para toda la comunidad o un curso, y eliminación. |
+| Actividades `/app/actividades` | Publicación, edición y eliminación según rol; alumnos marcan “entregada”. |
+| Avisos `/app/avisos` | Publicación, edición y eliminación según rol; filtros por categoría, curso, texto y fecha. |
 | Mis cursos `/app/mis-cursos` | Lectura de materias/asignaciones propias o del curso del alumno. |
+| Mis asistencias `/app/mis-asistencias` | Consulta del historial de asistencia propio por materia y fecha. |
 | Perfil `/app/perfil` | Lectura de datos personales, rol, curso, promedio y asistencia. |
 
 ## 12. Seed y cuentas de prueba
@@ -272,15 +285,14 @@ Datos incluidos: 6 cursos, 8 materias, 17 asignaciones, 6 inscripciones activas,
 
 ## 14. Limitaciones y pendientes
 
-1. **Migraciones y seed aplicados:** el esquema y el seed se ejecutaron en el proyecto `dnifipldschmuxkxvizi` el 2026-11-07 mediante la Management API. Los conteos y las políticas se verificaron en vivo (ver `docs/PRUEBAS_ETAPA6.md`).
-2. **Pruebas de UI parcialmente recorridas:** login, avisos, calificaciones, asistencia, actividades y guardas de rol se verificaron en navegador (ver `docs/PRUEBAS_ETAPA6.md`, sección 4). Falta recorrer los formularios de alta/edición/baja de alumnos, cursos y asignaciones, además del correo real de recuperación.
-3. **Correo de recuperación:** requiere configurar Site URL y Redirect URLs en Supabase Auth. Sin un proveedor SMTP propio, Supabase usa su servicio de correo con límites.
-4. **Alta de docentes:** la interfaz actual permite gestionar docentes existentes (asignaciones y estado), pero no crear nuevos docentes desde cero. Se pueden crear desde Supabase Auth + SQL o ampliar una RPC similar a `admin_crear_alumno`.
-5. **Edición de avisos:** la interfaz permite publicar y eliminar, pero no editar un aviso existente (la política RLS de `UPDATE` ya está preparada).
-6. **Entrega de actividades:** se registra la marca de entrega; no hay carga de archivos ni comentario desde la interfaz.
-7. **Ciclo lectivo:** el seed usa 2026. Al cambiar de año hay que crear las asignaciones y cursos correspondientes.
-8. **Cuentas demo visibles:** la pantalla de login muestra botones con las cuentas del seed. Conviene ocultarlos o eliminarlos en una instalación de producción.
-9. **DER:** el diagrama entidad-relación se elabora de forma manual; no está incluido en el repositorio.
+1. **Estado remoto:** migraciones 001–010 y seed aplicados en Supabase.
+2. **Pruebas manuales pendientes:** CRUD completo, cambios de curso y retest de los rechazos de RLS/fechas deben ejecutarse en un proyecto aislado con cuentas descartables.
+3. **Correo de recuperación:** requiere Site URL, Redirect URL y configuración de SMTP/buzón de prueba.
+4. **Entrega de actividades:** se registra la marca “entregada”; no hay carga de archivos ni comentario desde la interfaz.
+5. **Ciclo lectivo:** al cambiar de año hay que crear las asignaciones y cursos correspondientes.
+6. **Cuentas demo:** las cuentas del seed son ficticias y solo deben utilizarse en instalaciones de demostración; no reutilizar esas credenciales en un colegio real.
+7. **Funciones V2:** reportes PDF/Excel, notificaciones, boletín automático y acceso de tutores no forman parte de la primera versión.
+8. **DER:** el diagrama entidad-relación se elabora a partir de `docs/ANALISIS_DATOS_ETAPA3.md` y el esquema SQL.
 
 ## 15. Archivos principales
 
@@ -293,6 +305,10 @@ supabase/
     20261106000400_rls_policies.sql
     20261106000500_views.sql
     20261106000600_fix_v_avisos.sql
+    20261110000100_admin_profesores_roles.sql
+    20261110000200_materias_asignaciones.sql
+    20261115000100_security_hardening.sql
+    20261115000200_admin_account_creation.sql
   seed.sql
 src/
   lib/{supabase,errors,format,mappers}.js

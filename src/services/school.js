@@ -120,6 +120,18 @@ export async function fetchUsers() {
   return (data ?? []).map(mapUser)
 }
 
+export async function createAdministrator({ nombre, apellido, dni, correo, password }) {
+  return run(
+    db().rpc('admin_crear_administrador', {
+      p_nombre: nombre.trim(),
+      p_apellido: apellido.trim(),
+      p_dni: dni,
+      p_correo: correo.trim().toLowerCase(),
+      p_password: password,
+    }),
+  )
+}
+
 export async function changeUserRole(usuarioId, rol) {
   return run(
     db().rpc('admin_cambiar_rol_usuario', {
