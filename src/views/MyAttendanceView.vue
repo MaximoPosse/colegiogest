@@ -16,6 +16,7 @@ const error = ref('')
 const rows = ref([])
 const search = ref('')
 const statusFilter = ref('')
+const dateFilter = ref('')
 
 const columns = [
   { key: 'date', label: 'Fecha' },
@@ -49,6 +50,7 @@ const visibleRows = computed(() => {
   const term = search.value.trim().toLocaleLowerCase('es')
   return rows.value
     .filter((row) => !statusFilter.value || row.estado === statusFilter.value)
+    .filter((row) => !dateFilter.value || row.date === dateFilter.value)
     .filter((row) => !term
       || `${row.subject} ${row.teacher} ${row.status} ${row.observation ?? ''}`.toLocaleLowerCase('es').includes(term))
     .sort((a, b) => String(b.date).localeCompare(String(a.date)))
@@ -96,7 +98,10 @@ onMounted(loadAttendance)
       <div class="list-panel__top">
         <div><h2>Historial de asistencia</h2><p>{{ visibleRows.length }} {{ visibleRows.length === 1 ? 'registro' : 'registros' }}</p></div>
       </div>
-      <SearchFilterBar v-model="search" placeholder="Buscar por materia, docente o estado..." :filters="filters" @filter="setFilter" />
+      <div class="list-filter-row">
+        <SearchFilterBar v-model="search" placeholder="Buscar por materia, docente o estado..." :filters="filters" @filter="setFilter" />
+        <label class="date-filter" for="attendance-date-filter"><span>Filtrar por fecha</span><input id="attendance-date-filter" v-model="dateFilter" type="date" /></label>
+      </div>
       <DataTable
         :columns="columns"
         :rows="visibleRows"

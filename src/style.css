@@ -1004,6 +1004,30 @@ textarea {
   align-items: center;
   margin-bottom: 16px;
 }
+.list-filter-row {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.list-filter-row .search-filter-bar { flex: 1 1 360px; margin-bottom: 0; }
+.date-filter {
+  display: grid;
+  gap: 4px;
+  min-width: 180px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+.date-filter input {
+  min-height: 46px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #f9fbfd;
+  color: var(--text);
+}
 .search-box, .filter-select {
   display: flex;
   align-items: center;
@@ -2011,4 +2035,6 @@ td {
   .notice-card { flex-direction: column; }
   .notice-delete { align-self: flex-end; }
   .table-footer, .form-actions { display: grid; }
+  .list-filter-row { align-items: stretch; }
+  .date-filter { min-width: 100%; }
 }

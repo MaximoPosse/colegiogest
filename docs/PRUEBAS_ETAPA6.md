@@ -183,6 +183,7 @@ En `/app/calificaciones` (docente) la nota vigente se mostraba solo como `placeh
 | Compilación y empaquetado | ✅ Verificado |
 | Eliminación de mocks | ✅ Verificado |
 | Esquema, claves, restricciones e índices | ✅ Aplicado y verificado |
+| Migraciones 001–008 e historial remoto | ✅ Aplicadas y registradas en Supabase el 2026-11-15 |
 | Seed y cuentas demo | ✅ Aplicado y verificado |
 | Login de los tres roles | ✅ Verificado por API y por UI |
 | RLS de lectura por rol | ✅ Verificado por API |
@@ -193,3 +194,20 @@ En `/app/calificaciones` (docente) la nota vigente se mostraba solo como `placeh
 | DER | ⏳ Elaboración manual pendiente |
 | Alta/edición/baja de alumnos, cursos y asignaciones desde la UI | ⏳ Pendiente |
 | Envío real de correo de recuperación | ⏳ Pendiente de configurar Redirect URL/SMTP |
+
+## 6. Verificaciones complementarias de filtros · 2026-11-15
+
+| ID | Verificación | Resultado observado | Estado |
+| --- | --- | --- | --- |
+| UI12 | Administrador filtra avisos por fecha `2026-11-04` | Se muestra únicamente el aviso publicado ese día. | **Aprobada** |
+| UI13 | Profesor busca un alumno por nombre en la toma de asistencia | Al buscar “Mateo” queda un único alumno coincidente; no se guardaron cambios de asistencia. | **Aprobada** |
+| UI14 | Inicio de sesión y cierre en los tres roles | Administrador, alumno y profesor accedieron a sus pantallas y cerraron sesión correctamente. | **Aprobada** |
+| UI15 | Compilación de producción tras los cambios | `npm run build` completó correctamente. | **Aprobada** |
+
+La revisión también detectó advertencias de Vue en las tarjetas estadísticas porque el componente de icono se recibía como `Function`, aunque la propiedad solo aceptaba `Object`. Se amplió el tipo permitido en `src/components/StatCard.vue`; el build posterior quedó aprobado. No se ejecutaron altas, bajas, cambios de curso ni guardados en Supabase durante estas verificaciones.
+
+## 7. Aplicación de migraciones remotas · 2026-11-15
+
+En el proyecto de producción **Colegiogest** se comprobó primero que el esquema base ya existía (tablas, vistas y RLS). El historial remoto estaba vacío porque las migraciones anteriores se habían aplicado manualmente; se registraron 001–006 como aplicadas, se ejecutaron los archivos 007 y 008 y luego se registraron también en el historial.
+
+Verificación de solo lectura posterior: las funciones administrativas nuevas existen y el rol `authenticated` tiene permiso `EXECUTE` en las RPC de creación de profesores, cambio de rol, edición de materias y edición de asignaciones. No se modificaron ni eliminaron filas de datos escolares.

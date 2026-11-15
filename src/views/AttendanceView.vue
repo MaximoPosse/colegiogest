@@ -4,6 +4,7 @@ import { CalendarCheck, Check, Save } from '@lucide/vue'
 import BaseButton from '../components/BaseButton.vue'
 import DataTable from '../components/DataTable.vue'
 import FormField from '../components/FormField.vue'
+import SearchFilterBar from '../components/SearchFilterBar.vue'
 import { describeError } from '../lib/errors'
 import { todayIso, todayLongLabel } from '../lib/format'
 import { fetchAssignments, fetchAttendance, fetchStudents, saveAttendance } from '../services/school'
@@ -21,6 +22,7 @@ const students = ref([])
 const selectedCourseId = ref('')
 const selectedSubjectId = ref('')
 const date = ref(todayIso())
+const search = ref('')
 const drafts = reactive({})
 const loading = ref(true)
 const loadingRows = ref(false)
@@ -42,6 +44,13 @@ const summary = computed(() => statuses.reduce((result, status) => {
   return result
 }, {}))
 const marked = computed(() => students.value.filter((student) => Boolean(drafts[student.id])).length)
+const visibleStudents = computed(() => {
+  const term = search.value.trim().toLocaleLowerCase('es')
+  if (!term) return students.value
+  return students.value.filter((student) =>
+    `${student.name} ${student.surname} ${student.dni}`.toLocaleLowerCase('es').includes(term),
+  )
+})
 const columns = [
   { key: 'student', label: 'Alumno' },
   { key: 'dni', label: 'DNI' },
@@ -162,7 +171,8 @@ async function saveRecords() {
       </section>
       <section class="panel list-panel">
         <div class="list-panel__top"><div><h2>Alumnos del curso</h2><p>{{ students.length }} estudiantes · {{ marked }} marcados</p></div><BaseButton v-if="!saved" variant="outline" @click="notify('Tenés cambios sin guardar en la asistencia.', 'error')">Cambios sin guardar</BaseButton><span v-else class="saved-label"><Check :size="15" /> Guardado</span></div>
-        <DataTable :columns="columns" :rows="students" :empty-title="loadingRows ? 'Cargando alumnos...' : 'No hay alumnos inscriptos'" empty-text="Elegí otro curso para tomar asistencia.">
+        <SearchFilterBar v-model="search" placeholder="Buscar alumno por nombre, apellido o DNI..." />
+        <DataTable :columns="columns" :rows="visibleStudents" paginated :page-size="10" :empty-title="loadingRows ? 'Cargando alumnos...' : students.length ? 'No hay coincidencias' : 'No hay alumnos inscriptos'" :empty-text="students.length ? 'Probá con otro nombre, apellido o DNI.' : 'Elegí otro curso para tomar asistencia.'">
           <template #cell="{ row, column }">
             <div v-if="column.key === 'student'" class="student-cell"><span class="avatar avatar--table">{{ row.name.charAt(0) }}{{ row.surname.charAt(0) }}</span><span><strong>{{ row.surname }}, {{ row.name }}</strong><small>Estudiante</small></span></div>
             <div v-else-if="column.key === 'attendance'" class="attendance-options">

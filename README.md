@@ -200,15 +200,15 @@ docs/
 | Supabase Auth y recuperación de contraseña | ✅ Aplicado |
 | Conexión de vistas y CRUD a Supabase | ✅ Implementado |
 | Eliminación de datos mock | ✅ Implementado |
-| Gestión de profesores (RF05) | ✅ Implementado (migración 007; SQL pendiente de aplicar por el usuario) |
-| Cambio de rol de usuarios (RF03) | ✅ Implementado (migración 007; SQL pendiente de aplicar por el usuario) |
+| Gestión de profesores (RF05) | ✅ Implementado (migración 007 aplicada en Supabase) |
+| Cambio de rol de usuarios (RF03) | ✅ Implementado (migración 007 aplicada en Supabase) |
 | Edición de actividades y avisos propios (RF12/RF14) | ✅ Implementado |
-| Materias y asignaciones editables (RF07) | ✅ Implementado (migración 008; SQL pendiente de aplicar por el usuario) |
+| Materias y asignaciones editables (RF07) | ✅ Implementado (migración 008 aplicada en Supabase) |
 | Mis asistencias del alumno (RF11) | ✅ Implementado |
 | Paginación y filtros de listados (RF18/RNF05) | ✅ Implementado |
 | Build de producción | ✅ Verificado |
 | Migraciones 001–006 y seed en el proyecto remoto | ✅ Aplicados el 2026-11-07 |
-| Migraciones 007–008 en el proyecto remoto | ⏳ SQL listo; el usuario lo ejecuta manualmente |
+| Migraciones 001–008 e historial remoto | ✅ Aplicadas y registradas en Supabase el 2026-11-15 |
 | Pruebas de login, RLS y escritura por API | ✅ Ejecutadas |
 | Flujos principales de UI (login, avisos, notas, asistencia, actividades y guardas) | ✅ Verificados en navegador |
 | Alta/edición de alumnos, profesores, cambio de rol y cambio de curso | ⏳ Pendientes de recorrido manual (ver `docs/ETAPA6_COMPLETADO.md`) |

@@ -23,7 +23,7 @@ Además:
 - `supabase/setup_completo.sql` se regeneró para incluir las migraciones 007 y 008 antes del seed. Si el proyecto ya tiene 001–006 y el seed aplicados, alcanza con ejecutar las dos migraciones nuevas directamente en el SQL Editor.
 - `supabase/dev/limpiar_datos_test.sql` es un script de limpieza para pruebas (ver sección 6).
 
-> **Pendiente del usuario:** las migraciones 007 y 008 se ejecutan a mano en el SQL Editor. El código ya las usa, así que la aplicación depende de que estén aplicadas.
+> **Estado remoto (2026-11-15):** migraciones 007 y 008 aplicadas en el proyecto Supabase Colegiogest. Las ocho migraciones quedaron registradas en el historial remoto.
 
 ## 3. Cambios por tarea
 
@@ -54,7 +54,10 @@ Además:
 ### (6) Búsquedas, filtros y paginación · RF18/RNF05
 - `DataTable.vue` incorpora paginación opcional (10 por página) con reinicio a la página 1 al cambiar el contenido; se usa en calificaciones, profesores y mis-asistencias.
 - Alumnos usa paginación del lado del servidor con `range()` (`fetchStudentsPage`).
-- Avisos ya filtra por curso y por texto; asistencia ya filtra por curso/materia/fecha. Los vacíos muestran "No hay resultados" con los textos de `DataTable`.
+- Avisos filtra por destinatario, categoría, texto y fecha, y pagina las tarjetas de a 10.
+- Calificaciones y asistencias del alumno filtran por materia/estado, texto y fecha.
+- La toma de asistencia permite buscar alumnos por nombre, apellido o DNI y pagina el listado sin cambiar el conjunto que se guarda.
+- La toma de asistencia también filtra por curso, materia y fecha. Los vacíos muestran mensajes acordes a la búsqueda o al estado de carga.
 
 ### (7) Limpieza y organización
 - Se eliminaron `HelloWorld.vue` y los assets sin uso (`hero.png`, `vue.svg`, `vite.svg`).

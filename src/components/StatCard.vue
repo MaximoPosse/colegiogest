@@ -3,7 +3,7 @@ defineProps({
   label: { type: String, required: true },
   value: { type: [String, Number], required: true },
   detail: { type: String, default: '' },
-  icon: { type: Object, required: true },
+  icon: { type: [Object, Function], required: true },
   tone: { type: String, default: 'blue' },
 })
 </script>

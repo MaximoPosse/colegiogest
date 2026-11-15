@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { Bell, CalendarDays, Megaphone, Pencil, Plus, Send, Trash2, X } from '@lucide/vue'
 import BaseButton from '../components/BaseButton.vue'
 import FormField from '../components/FormField.vue'
@@ -24,6 +24,9 @@ const editingNoticeId = ref(null)
 const filter = ref('todos')
 const search = ref('')
 const courseFilter = ref('')
+const dateFilter = ref('')
+const page = ref(1)
+const pageSize = 10
 const loading = ref(true)
 const saving = ref(false)
 const error = ref('')
@@ -61,10 +64,15 @@ const visibleNotices = computed(() => {
       if (courseFilter.value) return notice.courseId === courseFilter.value
       return true
     })
+    .filter((notice) => !dateFilter.value || String(notice.date).slice(0, 10) === dateFilter.value)
     .filter((notice) => !term
       || `${notice.title} ${notice.body} ${notice.author} ${notice.audience}`.toLocaleLowerCase('es').includes(term))
     .sort((a, b) => String(b.date).localeCompare(String(a.date)))
 })
+const pageCount = computed(() => Math.max(1, Math.ceil(visibleNotices.value.length / pageSize)))
+const pagedNotices = computed(() => visibleNotices.value.slice((page.value - 1) * pageSize, page.value * pageSize))
+
+watch(visibleNotices, () => { page.value = 1 })
 
 function canEditNotice(notice) {
   return canPublish.value && (isAdmin.value || notice.authorId === session.user?.id)
@@ -197,9 +205,12 @@ async function removeNotice(notice) {
     </form>
     <section class="panel notices-panel">
       <div class="notices-panel__top"><div><h2>Comunicaciones</h2><p>{{ visibleNotices.length }} {{ visibleNotices.length === 1 ? 'aviso publicado' : 'avisos publicados' }}</p></div><div class="notice-filters" aria-label="Filtrar avisos"><button v-for="item in categories" :key="item.value" type="button" :class="{ 'notice-filter--active': filter === item.value }" @click="filter = item.value">{{ item.label }}</button></div></div>
-      <SearchFilterBar v-model="search" placeholder="Buscar por título, mensaje o autor..." :filters="filters" @filter="setFilter" />
+      <div class="list-filter-row">
+        <SearchFilterBar v-model="search" placeholder="Buscar por título, mensaje o autor..." :filters="filters" @filter="setFilter" />
+        <label class="date-filter" for="notice-date-filter"><span>Filtrar por fecha</span><input id="notice-date-filter" v-model="dateFilter" type="date" /></label>
+      </div>
       <div class="notice-list">
-        <article v-for="notice in visibleNotices" :key="notice.id" class="notice-card">
+        <article v-for="notice in pagedNotices" :key="notice.id" class="notice-card">
           <span class="notice-card__icon" :class="`notice-card__icon--${notice.category.toLowerCase()}`"><Megaphone :size="19" /></span>
           <div class="notice-card__content"><div class="notice-card__meta"><StatusBadge :status="notice.category === 'Institucional' ? 'Publicado' : notice.category" /><span><CalendarDays :size="14" /> {{ formatDate(notice.date) }}</span></div><h3>{{ notice.title }}</h3><p>{{ notice.body }}</p><div class="notice-card__footer"><span><Bell :size="14" /> {{ notice.audience }}</span><span>Publicado por {{ notice.author }}</span></div></div>
           <div v-if="canEditNotice(notice)" class="table-actions notice-actions">
@@ -208,6 +219,14 @@ async function removeNotice(notice) {
           </div>
         </article>
         <div v-if="!visibleNotices.length" class="empty-state"><h3>{{ loading ? 'Cargando avisos...' : 'No hay avisos con esos filtros' }}</h3><p>{{ loading ? 'Estamos consultando la base de datos.' : 'Elegí otra categoría, otro destinatario o publicá un nuevo aviso.' }}</p></div>
+      </div>
+      <div v-if="visibleNotices.length" class="table-footer">
+        <span>Mostrando {{ (page - 1) * pageSize + 1 }}–{{ Math.min(page * pageSize, visibleNotices.length) }} de {{ visibleNotices.length }}</span>
+        <div class="pagination">
+          <button type="button" :disabled="page === 1" @click="page--">Anterior</button>
+          <span class="pagination__page">Página {{ page }} de {{ pageCount }}</span>
+          <button type="button" :disabled="page >= pageCount" @click="page++">Siguiente</button>
+        </div>
       </div>
     </section>
   </div>
