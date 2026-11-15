@@ -87,7 +87,7 @@ export async function createTeacher({ nombre, apellido, dni, correo, password })
       p_apellido: apellido.trim(),
       p_dni: dni,
       p_correo: correo.trim().toLowerCase(),
-      p_password: password || 'demo123',
+      p_password: password,
     }),
   )
 }
@@ -257,7 +257,7 @@ export async function createStudent(payload) {
       p_dni: payload.dni,
       p_correo: payload.correo.trim().toLowerCase(),
       p_id_curso: payload.idCurso || null,
-      p_password: payload.password || 'demo123',
+      p_password: payload.password,
       p_fecha_nacimiento: payload.fechaNacimiento || null,
       p_telefono: payload.telefono || null,
     }),

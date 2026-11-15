@@ -114,7 +114,9 @@ function validate() {
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.email.trim())) {
     errors.email = 'Ingresá un correo electrónico válido.'
   }
-  if (!editingId.value && form.password && form.password.length < 6) {
+  if (!editingId.value && !form.password) {
+    errors.password = 'La contraseña inicial es obligatoria.'
+  } else if (!editingId.value && form.password.length < 6) {
     errors.password = 'La contraseña inicial debe tener al menos 6 caracteres.'
   }
   return Object.keys(errors).length === 0
@@ -244,7 +246,7 @@ async function confirmDeactivate() {
         <FormField id="teacher-email" label="Correo electrónico" :error="errors.email" required>
           <template #default="{ id }"><input :id="id" v-model="form.email" type="email" placeholder="docente@colegiogest.edu.ar" /></template>
         </FormField>
-        <FormField v-if="!editingId" id="teacher-password" label="Contraseña inicial" :error="errors.password" hint="Si se deja vacía se usa demo123.">
+        <FormField v-if="!editingId" id="teacher-password" label="Contraseña inicial" :error="errors.password" required hint="Mínimo 6 caracteres.">
           <template #default="{ id }"><input :id="id" v-model="form.password" type="password" placeholder="Mínimo 6 caracteres" /></template>
         </FormField>
       </div>

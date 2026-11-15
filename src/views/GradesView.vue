@@ -129,6 +129,7 @@ async function saveNewGrade() {
   if (!form.nota) errors.nota = 'Ingresá una nota.'
   else if (Number(form.nota) < 1 || Number(form.nota) > 10) errors.nota = 'La nota debe estar entre 1 y 10.'
   if (!form.fecha) errors.fecha = 'Seleccioná una fecha.'
+  else if (form.fecha > todayIso()) errors.fecha = 'La fecha no puede ser futura.'
   if (Object.keys(errors).length) return
   const assignment = selectedAssignment.value
   saving.value = true
@@ -215,7 +216,7 @@ async function removeGrade(grade) {
         <FormField id="grade-student" label="Alumno" :error="errors.studentId" required><template #default="{ id }"><select :id="id" v-model="form.studentId"><option disabled value="">Seleccioná un alumno</option><option v-for="student in studentsForForm" :key="student.id" :value="student.id">{{ student.surname }}, {{ student.name }}</option></select></template></FormField>
         <FormField id="grade-instance" label="Instancia" :error="errors.instancia" required><template #default="{ id }"><input :id="id" v-model="form.instancia" placeholder="Ej. Trabajo práctico" /></template></FormField>
         <FormField id="grade-value" label="Nota" :error="errors.nota" required hint="Escala de 1 a 10."><template #default="{ id }"><input :id="id" v-model="form.nota" type="number" min="1" max="10" step="0.01" /></template></FormField>
-        <FormField id="grade-date" label="Fecha" :error="errors.fecha" required><template #default="{ id }"><input :id="id" v-model="form.fecha" type="date" /></template></FormField>
+        <FormField id="grade-date" label="Fecha" :error="errors.fecha" required><template #default="{ id }"><input :id="id" v-model="form.fecha" type="date" :max="todayIso()" /></template></FormField>
       </div>
       <div v-if="formError" class="form-note form-note--error"><span>!</span><p>{{ formError }}</p></div>
       <div class="form-actions"><BaseButton variant="outline" @click="showForm = false">Cancelar</BaseButton><BaseButton type="submit" :disabled="saving"><Save :size="16" /> {{ saving ? 'Guardando…' : 'Guardar calificación' }}</BaseButton></div>

@@ -126,6 +126,10 @@ function setStatus(studentId, status) {
 
 async function saveRecords() {
   if (!assignment.value || saving.value) return
+  if (date.value > todayIso()) {
+    notify('No se puede registrar asistencia con fecha futura.', 'error')
+    return
+  }
   const unmarked = students.value.filter((student) => !drafts[student.id])
   if (unmarked.length) {
     notify(`Todavía falta marcar a ${unmarked.length} ${unmarked.length === 1 ? 'alumno' : 'alumnos'}.`, 'error')
@@ -164,7 +168,7 @@ async function saveRecords() {
       <section class="attendance-filters panel">
         <FormField id="attendance-course" label="Curso"><template #default="{ id }"><select :id="id" v-model="selectedCourseId" @change="changeCourse"><option v-for="item in courseOptions" :key="item.id" :value="item.id">{{ item.label }}</option></select></template></FormField>
         <FormField id="attendance-subject" label="Materia"><template #default="{ id }"><select :id="id" v-model="selectedSubjectId"><option v-for="item in subjectOptions" :key="item.id" :value="item.subjectId">{{ item.subject }}</option></select></template></FormField>
-        <FormField id="attendance-date" label="Fecha"><template #default="{ id }"><input :id="id" v-model="date" type="date" @change="saved = false" /></template></FormField>
+        <FormField id="attendance-date" label="Fecha"><template #default="{ id }"><input :id="id" v-model="date" type="date" :max="todayIso()" @change="saved = false" /></template></FormField>
       </section>
       <section class="attendance-summary">
         <div v-for="status in statuses" :key="status.value" class="attendance-summary__item" :class="`attendance-summary__item--${status.value}`"><span>{{ summary[status.value] ?? 0 }}</span><small>{{ status.label }}</small></div>

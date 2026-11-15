@@ -211,3 +211,15 @@ La revisión también detectó advertencias de Vue en las tarjetas estadísticas
 En el proyecto de producción **Colegiogest** se comprobó primero que el esquema base ya existía (tablas, vistas y RLS). El historial remoto estaba vacío porque las migraciones anteriores se habían aplicado manualmente; se registraron 001–006 como aplicadas, se ejecutaron los archivos 007 y 008 y luego se registraron también en el historial.
 
 Verificación de solo lectura posterior: las funciones administrativas nuevas existen y el rol `authenticated` tiene permiso `EXECUTE` en las RPC de creación de profesores, cambio de rol, edición de materias y edición de asignaciones. No se modificaron ni eliminaron filas de datos escolares.
+
+## 8. Despliegue y verificación de hardening · 2026-11-15
+
+Se aplicó `20261115000100_security_hardening.sql` en el proyecto de producción y quedó registrada como migración 009. Verificaciones de solo lectura posteriores:
+
+- Las nueve migraciones aparecen sincronizadas entre el repositorio y el historial remoto.
+- `usuarios_update` exige rol administrador y excluye la propia fila; el trigger protege los campos personales además de rol y estado.
+- Las RPC públicas de alta tienen cero argumentos predeterminados y permiso `EXECUTE` para `authenticated`, no para `anon`. Las implementaciones heredadas quedaron revocadas para los roles de API.
+- La RPC general de estado contiene el bloqueo por asignaciones docentes vigentes.
+- Las funciones de validación de asistencia y calificaciones comprueban fechas futuras usando la zona horaria de Argentina.
+
+No se ejecutaron intentos de escritura para probar los rechazos en producción ni se modificaron datos escolares. Se recomienda completar esas pruebas negativas en un proyecto de pruebas aislado.

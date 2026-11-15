@@ -56,7 +56,7 @@ psql "<connection-string>" -f supabase/seed.sql
 **Manualmente** desde el Dashboard (opción rápida):
 
 1. Abrir **SQL Editor**.
-2. Copiar todo el contenido de `supabase/setup_completo.sql` y ejecutarlo una sola vez. Ese archivo ya contiene, en orden, las ocho migraciones y el seed.
+2. Copiar todo el contenido de `supabase/setup_completo.sql` y ejecutarlo una sola vez. Ese archivo contiene, en orden, las nueve migraciones y el seed.
 3. Esperar el mensaje `Seed de ColegioGest cargado correctamente.`.
 
 **Manualmente** por archivos:
@@ -69,8 +69,9 @@ psql "<connection-string>" -f supabase/seed.sql
    - `20261106000400_rls_policies.sql`
    - `20261106000500_views.sql`
    - `20261106000600_fix_v_avisos.sql`
-   - `20261110000100_admin_profesores_roles.sql`
-   - `20261110000200_materias_asignaciones.sql`
+    - `20261110000100_admin_profesores_roles.sql`
+    - `20261110000200_materias_asignaciones.sql`
+    - `20261115000100_security_hardening.sql`
 3. Ejecutar `supabase/seed.sql`.
 
 ### 2. Configurar Auth
@@ -145,6 +146,9 @@ Todas las cuentas del seed usan la contraseña **`demo123`**.
 - Los alumnos solo acceden a sus propios datos y a los de su curso.
 - Las RPC administrativas (`admin_*`) validan el rol dentro de PostgreSQL.
 - Un trigger impide que un usuario no administrador cambie su rol o estado.
+- Los usuarios no pueden actualizar su propia fila en `usuarios`; el trigger también protege sus datos personales.
+- Las altas de alumnos y profesores requieren una contraseña indicada explícitamente, sin contraseñas predeterminadas.
+- La base de datos rechaza asistencias y calificaciones con fecha futura.
 - No se utiliza `service_role` en el frontend.
 
 ## Scripts
@@ -206,9 +210,10 @@ docs/
 | Materias y asignaciones editables (RF07) | ✅ Implementado (migración 008 aplicada en Supabase) |
 | Mis asistencias del alumno (RF11) | ✅ Implementado |
 | Paginación y filtros de listados (RF18/RNF05) | ✅ Implementado |
+| Hardening de permisos, altas y fechas futuras | ✅ Migración 009 aplicada en Supabase el 2026-11-15 |
 | Build de producción | ✅ Verificado |
 | Migraciones 001–006 y seed en el proyecto remoto | ✅ Aplicados el 2026-11-07 |
-| Migraciones 001–008 e historial remoto | ✅ Aplicadas y registradas en Supabase el 2026-11-15 |
+| Migraciones 001–009 e historial remoto | ✅ Aplicadas y registradas en Supabase el 2026-11-15 |
 | Pruebas de login, RLS y escritura por API | ✅ Ejecutadas |
 | Flujos principales de UI (login, avisos, notas, asistencia, actividades y guardas) | ✅ Verificados en navegador |
 | Alta/edición de alumnos, profesores, cambio de rol y cambio de curso | ⏳ Pendientes de recorrido manual (ver `docs/ETAPA6_COMPLETADO.md`) |

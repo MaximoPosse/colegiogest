@@ -126,3 +126,14 @@ Con la migración 007 aplicada, quedan ejecutables:
 - **PI09 — cambio de rol:** alumno → profesor → login como profesor → profesor → alumno → login como alumno.
 
 Después de cada corrida, ejecutar `supabase/dev/limpiar_datos_test.sql` para restaurar el estado.
+
+## 7. Hardening de seguridad · aplicado el 2026-11-15
+
+La migración `supabase/migrations/20261115000100_security_hardening.sql` incorpora las correcciones de seguridad e integridad detectadas en la revisión posterior:
+
+- Los usuarios no pueden actualizar su propia fila de `usuarios`; el trigger también bloquea cambios propios de nombre, apellido, DNI, correo, rol y estado.
+- `admin_cambiar_estado_usuario` impide desactivar un profesor que todavía tenga asignaciones del ciclo lectivo vigente.
+- Las RPC de alta de alumnos y profesores ya no aceptan una contraseña predeterminada; el alta exige una contraseña indicada por el administrador.
+- La base rechaza insertar o modificar asistencias y calificaciones con fecha futura.
+
+La aplicación y el script `supabase/setup_completo.sql` incluyen estos cambios. La migración 009 se aplicó al proyecto Supabase Colegiogest y quedó registrada en el historial. Se verificaron la política `usuarios_update`, los permisos y la aridad de las RPC públicas, el bloqueo de bajas con asignaciones y las validaciones de fecha en la base. No se modificaron datos escolares; quedan pruebas negativas de comportamiento para un entorno de pruebas aislado.
