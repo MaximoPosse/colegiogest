@@ -180,38 +180,32 @@ supabase/
   seed.sql           datos ficticios de demostración
   dev/               scripts de utilidad para pruebas (limpieza de datos de prueba)
 docs/
-  ANALISIS_DATOS_ETAPA3.md
-  ETAPA6.md
-  PRUEBAS_ETAPA6.md
-  ETAPA6_COMPLETADO.md
-  MANUAL_USUARIO.html             fuente editable del manual
-  MANUAL_USUARIO_ColegioGest.pdf  manual listo para compartir
-  INFORME_PRUEBAS_ETAPA8.html    fuente editable del informe de Etapa 8
-  INFORME_PRUEBAS_ETAPA8_ColegioGest.pdf informe final de pruebas
-  PRESENTACION_ColegioGest.html  presentación navegable con flechas
-  PRESENTACION_ColegioGest.pdf  presentación en diapositivas
-  PRESENTACION_ColegioGest.pptx presentación editable en PowerPoint
-  generar_presentacion_pptx.py  generador Open XML reproducible
-  ETAPA_FINAL.md                 guía técnica y de defensa oral
-  capturas-manual/                capturas usadas por el manual
+  Etapa1_Proyecto_Integrador.pdf   propuesta del proyecto
+  Etapa2_Requerimientos.pdf        requerimientos funcionales y no funcionales
+  Etapa3_Analisis_Diseno.pdf       analisis y diseno
+  Etapa4_PISWD.pdf                 consigna de pantallas, navegacion y diseno visual
+  DER_ColegioGest.pdf              diagrama entidad-relacion
+  Implementacion_Documentacion.pdf estado de requerimientos y pruebas de integracion
+  Manual_de_Usuario.pdf            manual por rol con capturas
+  Etapa8_Pruebas.pdf               informe de pruebas
+  ANALISIS_DATOS_ETAPA3.md, ETAPA6.md, PRUEBAS_ETAPA6.md, ETAPA6_COMPLETADO.md
+  ETAPA_FINAL.md                   revision final, arquitectura, defensa y entrega
+  PRESENTACION_ColegioGest.pptx/.pdf  presentacion de la defensa
+  capturas-manual/                 capturas usadas por el manual
 ```
 
 ## Documentación y entrega
 
+Toda la documentación está en la carpeta [`docs/`](docs/):
+
+- Etapas 1 a 4, DER, implementación y Etapa 8: PDFs `docs/Etapa*.pdf`, `docs/DER_ColegioGest.pdf`, `docs/Implementacion_Documentacion.pdf`
+- [Manual de usuario (PDF)](docs/Manual_de_Usuario.pdf)
 - [Análisis de datos de la Etapa 3](docs/ANALISIS_DATOS_ETAPA3.md)
 - [Documentación técnica de la Etapa 6](docs/ETAPA6.md)
 - [Pruebas de la Etapa 6](docs/PRUEBAS_ETAPA6.md)
 - [Cambios de la etapa de completado](docs/ETAPA6_COMPLETADO.md)
-- [Manual de usuario (PDF)](docs/MANUAL_USUARIO_ColegioGest.pdf)
-- [Fuente editable del manual (HTML)](docs/MANUAL_USUARIO.html)
-- [Informe de pruebas Etapa 8 (PDF)](docs/INFORME_PRUEBAS_ETAPA8_ColegioGest.pdf)
-- [Fuente editable del informe (HTML)](docs/INFORME_PRUEBAS_ETAPA8.html)
-- [Presentación final (PDF)](docs/PRESENTACION_ColegioGest.pdf)
-- [Presentación PowerPoint editable (PPTX)](docs/PRESENTACION_ColegioGest.pptx)
-- [Presentación interactiva editable (HTML)](docs/PRESENTACION_ColegioGest.html)
-- [Guía técnica y de defensa](docs/ETAPA_FINAL.md)
-
-Para regenerar el PPTX desde las capturas y el guion: instalar Pillow para Python y ejecutar `python docs/generar_presentacion_pptx.py`.
+- [Presentación final (PDF)](docs/PRESENTACION_ColegioGest.pdf) y [PowerPoint editable](docs/PRESENTACION_ColegioGest.pptx)
+- [Etapa final: revisión, demostración y defensa](docs/ETAPA_FINAL.md)
 
 ## Estado
 

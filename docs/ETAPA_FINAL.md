@@ -1,7 +1,7 @@
 # Etapa Final · Preparación de entrega y defensa
 
 **ColegioGest · Proyecto Integrador PDISWD · Vue 3 + Supabase**  
-Actualización: 15 de noviembre de 2026.
+Actualización: 16 de noviembre de 2026.
 
 Este documento organiza la revisión final, la demostración y la defensa. Los resultados distinguen pruebas ejecutadas, evidencia histórica y verificaciones que siguen pendientes; no se presentan pendientes como aprobados.
 
@@ -126,13 +126,38 @@ Al pasar de datos mock a Supabase, los permisos no podían depender solo de boto
 9. **¿Se suben archivos en la entrega?** No; solo cambia el estado a “Entregada”.
 10. **¿Qué falta para validar completamente?** Pruebas CRUD/negativas aisladas y métricas RNF; además configuración de SMTP/backup.
 
-## 10. Archivos de entrega
+## 10. Revisión de la versión definitiva (16/11/2026)
 
-- Código y configuración: `src/`, `package.json`, `package-lock.json`, `.env.example`.
-- Base reproducible: `supabase/setup_completo.sql`, `supabase/migrations/001–010` y `supabase/seed.sql`.
-- Manual: `docs/MANUAL_USUARIO_ColegioGest.pdf` + fuente `docs/MANUAL_USUARIO.html`.
-- Informe de Etapa 8: `docs/INFORME_PRUEBAS_ETAPA8_ColegioGest.pdf` + fuente HTML.
-- Presentación: `docs/PRESENTACION_ColegioGest.pptx` (editable), `docs/PRESENTACION_ColegioGest.pdf` y presentación interactiva HTML; `docs/generar_presentacion_pptx.py` reproduce el PPTX con Python y Pillow.
-- Este guion de arquitectura, resultados y defensa: `docs/ETAPA_FINAL.md`.
+- **Dependencia innecesaria eliminada:** `@supabase/ssr` figuraba en `package.json` pero no se importa en `src/`; se quitó con `npm uninstall`.
+- **`.env.example` saneado:** contenía la URL y la publishable key de un proyecto real; ahora trae marcadores (`TU-PROYECTO`). El `.env` real sigue ignorado por git y no hay referencias a `service_role` en `src/`.
+- **Script SQL:** se comprobó que `supabase/setup_completo.sql` contiene las 10 migraciones y el seed (solo difieren comentarios).
+- **Instalación limpia:** `npm ci` + `npm run build` en una copia sin `node_modules` ni `.env`: correcto.
+- **Documentación unificada** en `docs/` (PDFs de las etapas 1–4, DER, implementación, manual y Etapa 8) y enlaces del README actualizados.
+- **Fuera del proyecto:** las carpetas `reportes-qa/` y `reportes-qa-ahorrapp/` pertenecen a otro sistema (Ahorrapp) y no deben incluirse en la entrega.
+
+## 11. Correspondencia con la consigna de la Etapa Final
+
+| Punto | Dónde está |
+| --- | --- |
+| 1. Revisión final y errores de Etapa 8 (ER01–ER05) | Sección 1 y `docs/Etapa8_Pruebas.pdf`; correcciones en migraciones 009/010 |
+| 2. Versión definitiva y limpieza | Sección 10 |
+| 3. Script SQL, RLS y datos ficticios | `supabase/setup_completo.sql`, `supabase/migrations/`, `supabase/seed.sql` |
+| 4. Ejecución en otra computadora | Sección 2 y README |
+| 5. Demostración | Sección 3 |
+| 6. Presentación | `docs/PRESENTACION_ColegioGest.pptx` / `.pdf` |
+| 7–8. Arquitectura y modelo de datos | Secciones 4 y 5, `docs/DER_ColegioGest.pdf`, `docs/ETAPA6.md` |
+| 9–10. Operaciones, roles y permisos | Sección 3; cuentas en el README (contraseña `demo123`, solo demostración) |
+| 11–12. Código relevante y dificultad técnica | Secciones 6 y 7 |
+| 13. Resultados vs. objetivos | Sección 8 |
+| 14. Defensa oral | Sección 9 |
+| 15. Entrega | Sección 12 |
+
+## 12. Archivos de entrega
+
+- Código y configuración: `src/`, `package.json`, `package-lock.json`, `.env.example`, `index.html`, `vite.config.js`, `public/`.
+- Base reproducible: `supabase/setup_completo.sql`, `supabase/migrations/` (001–010) y `supabase/seed.sql`.
+- Documentación de las etapas: PDFs en `docs/` (Etapas 1–4, DER, implementación, manual de usuario, Etapa 8) y los `.md` técnicos.
+- Presentación: `docs/PRESENTACION_ColegioGest.pptx` y `.pdf`.
+- Esta guía: `docs/ETAPA_FINAL.md`.
 
 **Reproducción:** `npm ci` → configurar `.env` → `npm run dev` o `npm run build`. No versionar `.env` ni credenciales privadas.
